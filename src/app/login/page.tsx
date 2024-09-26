@@ -8,16 +8,46 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [currentForm, setCurrentForm] = useState('login'); // 'login', 'register', or 'resetPassword'
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [currentForm, setCurrentForm] = useState('login');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     switch (currentForm) {
       case 'login':
         console.log('Login attempted with:', { email, password });
         break;
       case 'register':
-        console.log('Registration attempted with:', { email, password, confirmPassword });
+        try {
+          const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, firstName, lastName }),
+          });
+          
+          const text = await response.text();
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (error) {
+            console.error('Error parsing JSON:', text);
+            throw new Error('Invalid response from server');
+          }
+  
+          if (response.ok) {
+            console.log('Registration successful:', data);
+            // Handle successful registration (e.g., show success message, redirect to login)
+          } else {
+            console.error('Registration failed:', data.message);
+            // Handle registration error (e.g., show error message)
+          }
+        } catch (error) {
+          console.error('Error during registration:', error);
+          // Handle network or other errors
+        }
         break;
       case 'resetPassword':
         console.log('Password reset attempted for:', email);
@@ -75,9 +105,37 @@ const LoginPage = () => {
             </div>
           </>
         );
-      case 'register':
-        return (
-          <>
+        case 'register':
+          return (
+            <>
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  Förnamn
+                </label>
+                <input
+                  id="firstName"
+                  name="firstName"
+                  type="text"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#20c997] focus:border-[#20c997] sm:text-sm"
+                />
+              </div>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  Efternamn
+                </label>
+                <input
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#20c997] focus:border-[#20c997] sm:text-sm"
+                />
+              </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 E-postadress
