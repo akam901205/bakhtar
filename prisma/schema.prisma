@@ -16,7 +16,9 @@ model User {
   lastName           String
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
+  Business           Business[]
   PasswordResetToken PasswordResetToken[]
+  Request            Request[]
   UserSession        UserSession[]
 }
 
@@ -40,4 +42,30 @@ model UserSession {
   user      User     @relation(fields: [userId], references: [id])
 
   @@index([userId], map: "UserSession_userId_fkey")
+}
+
+model Business {
+  id        Int       @id @default(autoincrement())
+  name      String
+  adminId   Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  admin     User      @relation(fields: [adminId], references: [id])
+  Request   Request[]
+
+  @@index([adminId], map: "Business_adminId_fkey")
+}
+
+model Request {
+  id         Int      @id @default(autoincrement())
+  status     String
+  businessId Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  userId     Int
+  business   Business @relation(fields: [businessId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([businessId], map: "Request_businessId_fkey")
+  @@index([userId], map: "Request_userId_fkey")
 }

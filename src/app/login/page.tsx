@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -11,15 +12,74 @@ const LoginPage = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [currentForm, setCurrentForm] = useState('login');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState('');
+  const router = useRouter();
+
+  useEffect(() => {
+    console.log('[LoginPage] Component mounted');
+    // Check if user is already logged in
+    const token = localStorage.getItem('token');
+    const userEmail = localStorage.getItem('userEmail');
+    if (token && userEmail) {
+      console.log('[LoginPage] User already logged in, redirecting to welcome page');
+      router.push('/valkommsida');
+    }
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+    console.log(`[LoginPage] Attempting ${currentForm}`);
+  
     switch (currentForm) {
       case 'login':
-        console.log('Login attempted with:', { email, password });
+        try {
+          console.log('[LoginPage] Login attempt for email:', email);
+          const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password, remember: rememberMe }),
+            credentials: 'include', // Lägg till denna rad
+          });
+          
+          console.log('[LoginPage] Login response status:', response.status);
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log('[LoginPage] Login successful, received token:', data.token);
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('userEmail', email);
+            console.log('[LoginPage] Token and email set in localStorage');
+            // Trigger a storage event to update other tabs/windows
+            window.dispatchEvent(new Event('storage'));
+            console.log('[LoginPage] Attempting to redirect to /valkommsida');
+            
+            // Add a delay before redirecting
+            setTimeout(() => {
+              router.push('/valkommsida');
+              console.log('[LoginPage] Redirection initiated');
+            }, 100);
+          } else {
+            const data = await response.json();
+            console.error('[LoginPage] Login failed:', data.message);
+            setError(data.message || 'Inloggning misslyckades');
+          }
+        } catch (error) {
+          console.error('[LoginPage] Error during login:', error);
+          setError('Ett fel uppstod vid inloggning');
+        }
         break;
+
       case 'register':
         try {
+          if (password !== confirmPassword) {
+            setError('Lösenorden matchar inte');
+            return;
+          }
+          console.log('[LoginPage] Registration attempt for email:', email);
           const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: {
@@ -28,29 +88,26 @@ const LoginPage = () => {
             body: JSON.stringify({ email, password, firstName, lastName }),
           });
           
-          const text = await response.text();
-          let data;
-          try {
-            data = JSON.parse(text);
-          } catch (error) {
-            console.error('Error parsing JSON:', text);
-            throw new Error('Invalid response from server');
-          }
-  
+          console.log('[LoginPage] Registration response status:', response.status);
+          
+          const data = await response.json();
           if (response.ok) {
-            console.log('Registration successful:', data);
-            // Handle successful registration (e.g., show success message, redirect to login)
+            console.log('[LoginPage] Registration successful');
+            setCurrentForm('login');
+            setError('Registrering lyckades. Vänligen logga in.');
           } else {
-            console.error('Registration failed:', data.message);
-            // Handle registration error (e.g., show error message)
+            console.error('[LoginPage] Registration failed:', data.message);
+            setError(data.message || 'Registrering misslyckades');
           }
         } catch (error) {
-          console.error('Error during registration:', error);
-          // Handle network or other errors
+          console.error('[LoginPage] Error during registration:', error);
+          setError('Ett fel uppstod vid registrering');
         }
         break;
+
       case 'resetPassword':
-        console.log('Password reset attempted for:', email);
+        console.log('[LoginPage] Password reset attempted for:', email);
+        setError('Lösenordsåterställning är inte implementerad ännu');
         break;
     }
   };
@@ -96,6 +153,8 @@ const LoginPage = () => {
                   id="remember-me"
                   name="remember-me"
                   type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-[#20c997] focus:ring-[#20c997] border-gray-300 rounded"
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
@@ -105,37 +164,37 @@ const LoginPage = () => {
             </div>
           </>
         );
-        case 'register':
-          return (
-            <>
-              <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
-                  Förnamn
-                </label>
-                <input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  required
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#20c997] focus:border-[#20c997] sm:text-sm"
-                />
-              </div>
-              <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
-                  Efternamn
-                </label>
-                <input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  required
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#20c997] focus:border-[#20c997] sm:text-sm"
-                />
-              </div>
+      case 'register':
+        return (
+          <>
+            <div>
+              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                Förnamn
+              </label>
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#20c997] focus:border-[#20c997] sm:text-sm"
+              />
+            </div>
+            <div>
+              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                Efternamn
+              </label>
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="mt-1 appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#20c997] focus:border-[#20c997] sm:text-sm"
+              />
+            </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 E-postadress
@@ -240,6 +299,11 @@ const LoginPage = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          {error && (
+            <div className="mb-4 text-red-600 text-sm">
+              {error}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             {renderForm()}
             <div>

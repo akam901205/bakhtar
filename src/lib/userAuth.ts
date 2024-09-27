@@ -154,6 +154,21 @@ const userAuth = {
       throw error;
     }
   },
+
+  async getUserData(userId: number) {
+    try {
+      const unansweredRequests = await prisma.request.count({
+        where: { userId, status: 'unanswered' },
+      });
+      const connectedBusinesses = await prisma.business.count({
+        where: { adminId: userId },
+      });
+      return { unansweredRequests, connectedBusinesses };
+    } catch (error) {
+      console.error('Error in userAuth.getUserData:', error);
+      throw error;
+    }
+  },
 }
 
 export default userAuth
