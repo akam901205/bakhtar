@@ -18,12 +18,11 @@ const LoginPage = () => {
 
   useEffect(() => {
     console.log('[LoginPage] Component mounted');
-    // Check if user is already logged in
     const token = localStorage.getItem('token');
     const userEmail = localStorage.getItem('userEmail');
     if (token && userEmail) {
       console.log('[LoginPage] User already logged in, redirecting to welcome page');
-      router.push('/valkommsida');
+      router.replace('/valkommsida');
     }
   }, [router]);
 
@@ -42,7 +41,7 @@ const LoginPage = () => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ email, password, remember: rememberMe }),
-            credentials: 'include', // Lägg till denna rad
+            credentials: 'include',
           });
           
           console.log('[LoginPage] Login response status:', response.status);
@@ -53,15 +52,13 @@ const LoginPage = () => {
             localStorage.setItem('token', data.token);
             localStorage.setItem('userEmail', email);
             console.log('[LoginPage] Token and email set in localStorage');
+            
             // Trigger a storage event to update other tabs/windows
             window.dispatchEvent(new Event('storage'));
             console.log('[LoginPage] Attempting to redirect to /valkommsida');
             
-            // Add a delay before redirecting
-            setTimeout(() => {
-              router.push('/valkommsida');
-              console.log('[LoginPage] Redirection initiated');
-            }, 100);
+            // Use router.replace instead of router.push
+            router.replace('/valkommsida');
           } else {
             const data = await response.json();
             console.error('[LoginPage] Login failed:', data.message);
@@ -106,8 +103,26 @@ const LoginPage = () => {
         break;
 
       case 'resetPassword':
-        console.log('[LoginPage] Password reset attempted for:', email);
-        setError('Lösenordsåterställning är inte implementerad ännu');
+        try {
+          console.log('[LoginPage] Password reset attempted for:', email);
+          const response = await fetch('/api/auth/reset-password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+          });
+          
+          const data = await response.json();
+          if (response.ok) {
+            setError('En länk för lösenordsåterställning har skickats till din e-post.');
+          } else {
+            setError(data.message || 'Lösenordsåterställning misslyckades');
+          }
+        } catch (error) {
+          console.error('[LoginPage] Error during password reset:', error);
+          setError('Ett fel uppstod vid lösenordsåterställning');
+        }
         break;
     }
   };

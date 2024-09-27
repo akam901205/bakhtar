@@ -8,16 +8,15 @@ export async function POST(req: NextRequest) {
     if (user) {
       const token = await userAuth.createSession(user.id, remember);
       const response = NextResponse.json({ success: true, token, email: user.email }, { status: 200 });
-      
-      // Uppdatera cookie-inställningarna
+     
+      // Update cookie settings
       response.cookies.set('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // Använd säkra cookies i produktion
-        sameSite: 'none', // Tillåt cross-site cookies
-        maxAge: remember ? 30 * 24 * 60 * 60 : 24 * 60 * 60, // 30 dagar eller 1 dag
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax', // Change to 'lax' for better compatibility
+        maxAge: remember ? 30 * 24 * 60 * 60 : 24 * 60 * 60,
         path: '/',
       });
-
       return response;
     } else {
       return NextResponse.json({ success: false, message: 'Ogiltiga inloggningsuppgifter' }, { status: 401 });
