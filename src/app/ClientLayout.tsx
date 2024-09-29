@@ -32,7 +32,7 @@ export default function ClientLayout({
         setIsLoggedIn(false);
         setUserEmail(null);
         console.log('[ClientLayout] User is not logged in');
-        if (pathname === '/valkommsida') {
+        if (pathname === '/valkommsida' || pathname === '/forfragningar') {
           router.replace('/login');
         }
       }
@@ -73,7 +73,7 @@ export default function ClientLayout({
   return (
     <div className="flex flex-col min-h-screen">
       <Header isLoggedIn={isLoggedIn} userEmail={userEmail} onLogout={handleLogout} />
-      <Navigation />
+      <Navigation isLoggedIn={isLoggedIn} />
       <main className="flex-grow">{children}</main>
       <Footer />
     </div>

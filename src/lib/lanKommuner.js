@@ -1,0 +1,25 @@
+const lanKommuner = {
+    'Blekinge län': ['Karlskrona', 'Ronneby', 'Karlshamn', 'Sölvesborg', 'Olofström'],
+    'Dalarnas län': ['Falun', 'Borlänge', 'Ludvika', 'Avesta', 'Mora', 'Hedemora', 'Leksand', 'Säter', 'Rättvik', 'Orsa', 'Älvdalen', 'Smedjebacken', 'Gagnef', 'Vansbro', 'Malung-Sälen'],
+    'Gotlands län': ['Gotland'],
+    'Gävleborgs län': ['Gävle', 'Sandviken', 'Hudiksvall', 'Bollnäs', 'Söderhamn', 'Ljusdal', 'Ockelbo', 'Nordanstig', 'Hofors', 'Ovanåker'],
+    'Hallands län': ['Halmstad', 'Kungsbacka', 'Varberg', 'Falkenberg', 'Laholm', 'Hylte'],
+    'Jämtlands län': ['Östersund', 'Åre', 'Krokom', 'Strömsund', 'Berg', 'Härjedalen', 'Bräcke', 'Ragunda'],
+    'Jönköpings län': ['Jönköping', 'Värnamo', 'Nässjö', 'Gislaved', 'Vetlanda', 'Tranås', 'Eksjö', 'Mullsjö', 'Vaggeryd', 'Sävsjö', 'Aneby', 'Gnosjö', 'Habo'],
+    'Kalmar län': ['Kalmar', 'Västervik', 'Oskarshamn', 'Nybro', 'Vimmerby', 'Mörbylånga', 'Hultsfred', 'Mönsterås', 'Emmaboda', 'Borgholm', 'Torsås', 'Högsby'],
+    'Kronobergs län': ['Växjö', 'Ljungby', 'Älmhult', 'Alvesta', 'Tingsryd', 'Markaryd', 'Lessebo', 'Uppvidinge'],
+    'Norrbottens län': ['Luleå', 'Piteå', 'Boden', 'Kiruna', 'Gällivare', 'Kalix', 'Älvsbyn', 'Arvidsjaur', 'Överkalix', 'Övertorneå', 'Haparanda', 'Pajala', 'Jokkmokk', 'Arjeplog'],
+    'Skåne län': ['Malmö', 'Helsingborg', 'Lund', 'Kristianstad', 'Landskrona', 'Trelleborg', 'Ängelholm', 'Hässleholm', 'Ystad', 'Eslöv', 'Kävlinge', 'Vellinge', 'Höganäs', 'Staffanstorp', 'Lomma', 'Svedala', 'Sjöbo', 'Burlöv', 'Höör', 'Simrishamn', 'Klippan', 'Hörby', 'Båstad', 'Bromölla', 'Osby', 'Perstorp', 'Tomelilla', 'Örkelljunga', 'Bjuv', 'Skurup', 'Svalöv', 'Åstorp', 'Östra Göinge'],
+    'Stockholms län': ['Stockholm', 'Huddinge', 'Nacka', 'Södertälje', 'Botkyrka', 'Haninge', 'Solna', 'Järfälla', 'Täby', 'Sollentuna', 'Norrtälje', 'Lidingö', 'Sigtuna', 'Österåker', 'Värmdö', 'Upplands Väsby', 'Sundbyberg', 'Tyresö', 'Ekerö', 'Danderyd', 'Upplands-Bro', 'Vallentuna', 'Nynäshamn', 'Nykvarn', 'Salem', 'Vaxholm'],
+    'Södermanlands län': ['Eskilstuna', 'Nyköping', 'Katrineholm', 'Strängnäs', 'Flen', 'Oxelösund', 'Trosa', 'Vingåker', 'Gnesta'],
+    'Uppsala län': ['Uppsala', 'Enköping', 'Östhammar', 'Knivsta', 'Tierp', 'Älvkarleby', 'Heby', 'Håbo'],
+    'Värmlands län': ['Karlstad', 'Kristinehamn', 'Arvika', 'Säffle', 'Filipstad', 'Hagfors', 'Grums', 'Hammarö', 'Forshaga', 'Torsby', 'Årjäng', 'Sunne', 'Kil', 'Eda', 'Munkfors', 'Storfors'],
+    'Västerbottens län': ['Umeå', 'Skellefteå', 'Lycksele', 'Vilhelmina', 'Storuman', 'Vännäs', 'Åsele', 'Nordmaling', 'Malå', 'Vindeln', 'Robertsfors', 'Norsjö', 'Bjurholm', 'Dorotea', 'Sorsele'],
+    'Västernorrlands län': ['Sundsvall', 'Örnsköldsvik', 'Härnösand', 'Sollefteå', 'Timrå', 'Kramfors', 'Ånge'],
+    'Västmanlands län': ['Västerås', 'Köping', 'Sala', 'Fagersta', 'Hallstahammar', 'Arboga', 'Surahammar', 'Kungsör', 'Skinnskatteberg', 'Norberg'],
+    'Västra Götalands län': ['Göteborg', 'Borås', 'Mölndal', 'Trollhättan', 'Uddevalla', 'Skövde', 'Lidköping', 'Alingsås', 'Lerum', 'Kungälv', 'Vänersborg', 'Partille', 'Falköping', 'Mariestad', 'Härryda', 'Ale', 'Stenungsund', 'Mark', 'Ulricehamn', 'Öckerö', 'Tjörn', 'Tibro', 'Orust', 'Karlsborg', 'Vara', 'Lysekil', 'Strömstad', 'Åmål', 'Tranemo', 'Götene', 'Töreboda', 'Sotenäs', 'Mellerud', 'Svenljunga', 'Färgelanda', 'Munkedal', 'Hjo', 'Bollebygd', 'Herrljunga', 'Bengtsfors', 'Tidaholm', 'Lilla Edet', 'Vårgårda', 'Dals-Ed', 'Essunga', 'Grästorp', 'Gullspång'],
+    'Örebro län': ['Örebro', 'Karlskoga', 'Kumla', 'Lindesberg', 'Hallsberg', 'Nora', 'Askersund', 'Degerfors', 'Hällefors', 'Laxå', 'Lekeberg', 'Ljusnarsberg'],
+    'Östergötlands län': ['Linköping', 'Norrköping', 'Motala', 'Finspång', 'Mjölby', 'Söderköping', 'Vadstena', 'Åtvidaberg', 'Valdemarsvik', 'Kinda', 'Boxholm', 'Ödeshög', 'Ydre'],
+  };
+  
+  export default lanKommuner;

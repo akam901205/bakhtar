@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import lanKommuner from '@/lib/lanKommuner';
 
 export default function SokVerksamhet() {
   const [selectedLan, setSelectedLan] = useState('');
+  const [selectedKommun, setSelectedKommun] = useState('');
   const [ageRange, setAgeRange] = useState({ min: 0, max: 100 });
   const [targetGroups, setTargetGroups] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -20,6 +22,11 @@ export default function SokVerksamhet() {
     setSelectedServices(prev => 
       prev.includes(service) ? prev.filter(s => s !== service) : [...prev, service]
     );
+  };
+
+  const handleLanChange = (lan) => {
+    setSelectedLan(lan);
+    setSelectedKommun('');
   };
 
   return (
@@ -48,14 +55,35 @@ export default function SokVerksamhet() {
                 </label>
                 <select
                   id="lan"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
                   value={selectedLan}
-                  onChange={(e) => setSelectedLan(e.target.value)}
+                  onChange={(e) => handleLanChange(e.target.value)}
                 >
                   <option value="">Välj län</option>
-                  {/* Add län options here */}
+                  {Object.keys(lanKommuner).map((lan) => (
+                    <option key={lan} value={lan}>{lan}</option>
+                  ))}
                 </select>
               </div>
+
+              {selectedLan && (
+                <div className="mb-6">
+                  <label className="block text-gray-700 font-medium mb-2" htmlFor="kommun">
+                    Välj kommun
+                  </label>
+                  <select
+                    id="kommun"
+                    className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                    value={selectedKommun}
+                    onChange={(e) => setSelectedKommun(e.target.value)}
+                  >
+                    <option value="">Alla kommuner</option>
+                    {lanKommuner[selectedLan].map((kommun) => (
+                      <option key={kommun} value={kommun}>{kommun}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="mb-6">
                 <label className="block text-gray-700 font-medium mb-2">
@@ -64,14 +92,14 @@ export default function SokVerksamhet() {
                 <div className="flex space-x-4">
                   <input
                     type="number"
-                    className="w-1/2 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className="w-1/2 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
                     placeholder="Min ålder"
                     value={ageRange.min}
                     onChange={(e) => setAgeRange({ ...ageRange, min: parseInt(e.target.value) })}
                   />
                   <input
                     type="number"
-                    className="w-1/2 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                    className="w-1/2 p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
                     placeholder="Max ålder"
                     value={ageRange.max}
                     onChange={(e) => setAgeRange({ ...ageRange, max: parseInt(e.target.value) })}
@@ -104,7 +132,7 @@ export default function SokVerksamhet() {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold mb-6 text-gray-700">Välj insats/lagrum</h2>
+            <h2 className="text-2xl font-semibold mb-6 text-gray-700">Välj insats/lagrum</h2>
               <div className="space-y-2 max-h-96 overflow-y-auto pr-4">
                 {[
                   'Konsulentstödd familjehemsvård - SoL 7.1.5',
@@ -146,7 +174,7 @@ export default function SokVerksamhet() {
             <h2 className="text-2xl font-semibold mb-4 text-gray-700">Sök efter specifik verksamhet</h2>
             <input
               type="text"
-              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
               placeholder="Ange verksamhetsnamn"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -159,7 +187,7 @@ export default function SokVerksamhet() {
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               // Implement search functionality here
-              console.log('Search criteria:', { selectedLan, ageRange, targetGroups, selectedServices, searchTerm });
+              console.log('Search criteria:', { selectedLan, selectedKommun, ageRange, targetGroups, selectedServices, searchTerm });
             }}
           >
             Sök verksamheter
