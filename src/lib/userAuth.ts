@@ -13,55 +13,11 @@ const userAuth = {
       const match = await bcryptjs.compare(password, user.password);
       console.log('Login attempt result:', match ? 'successful' : 'failed');
       if (match) {
-        // Explicitly select the fields we want to return
         const { id, email, isAdmin } = user;
         return {
           id,
           email,
           isAdmin: isAdmin || false // Assuming there's an isAdmin field in your User model
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error in userAuth.login:', error);
-      throw error;
-    }
-  },
-
-      const match = await bcryptjs.compare(password, user.password);
-      console.log('Password match result:', match);
-
-      if (match) {
-        const userData = {
-          id: user.id,
-          email: user.email,
-          isAdmin: user.isAdmin
-        };
-        console.log('User data being returned from userAuth.login:', JSON.stringify(userData, null, 2));
-        console.log('Returned isAdmin - type:', typeof userData.isAdmin, 'value:', userData.isAdmin);
-        return userData;
-      }
-      return null;
-    } catch (error) {
-      console.error('Error in userAuth.login:', error);
-      throw error;
-    }
-  },
-
-  async login(email: string, password: string) {
-    try {
-      const user = await prisma.user.findUnique({ where: { email } });
-      if (!user) {
-        console.log('Login failed: User not found');
-        return null;
-      }
-      const match = await bcryptjs.compare(password, user.password);
-      console.log('Login attempt result:', match ? 'successful' : 'failed');
-      if (match) {
-        const { password: _, ...userWithoutPassword } = user;
-        return {
-          ...userWithoutPassword,
-          isAdmin: user.isAdmin || false // Assuming there's an isAdmin field in your User model
         };
       }
       return null;
@@ -199,6 +155,4 @@ const userAuth = {
       throw error;
     }
   },
-}
-
-export default userAuth
+};
