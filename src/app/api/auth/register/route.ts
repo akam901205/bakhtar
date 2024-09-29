@@ -14,9 +14,13 @@ export async function POST(request: Request) {
 
     const userId = await userAuth.register(email, password, firstName, lastName);
     console.log('User registered successfully:', userId);
+
     return NextResponse.json({ message: 'User registered successfully', userId }, { status: 201 });
   } catch (error) {
     console.error('Registration error:', error);
+    if (error instanceof Error && error.message === 'User already exists') {
+      return NextResponse.json({ message: 'User already exists' }, { status: 409 });
+    }
     return NextResponse.json({ message: 'Error registering user', error: String(error) }, { status: 500 });
   }
 }

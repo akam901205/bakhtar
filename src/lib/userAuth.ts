@@ -17,12 +17,39 @@ const userAuth = {
         return {
           id,
           email,
-          isAdmin: isAdmin || false // Assuming there's an isAdmin field in your User model
+          isAdmin: isAdmin || false
         };
       }
       return null;
     } catch (error) {
       console.error('Error in userAuth.login:', error);
+      throw error;
+    }
+  },
+
+  async register(email: string, password: string, firstName: string, lastName: string) {
+    try {
+      const existingUser = await prisma.user.findUnique({ where: { email } });
+      if (existingUser) {
+        throw new Error('User already exists');
+      }
+
+      const hashedPassword = await bcryptjs.hash(password, 10);
+
+      const newUser = await prisma.user.create({
+        data: {
+          email,
+          password: hashedPassword,
+          firstName,
+          lastName,
+          isAdmin: false,
+        },
+      });
+
+      console.log('User registered successfully:', newUser.id);
+      return newUser.id;
+    } catch (error) {
+      console.error('Error in userAuth.register:', error);
       throw error;
     }
   },
