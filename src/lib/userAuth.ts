@@ -53,7 +53,7 @@ const userAuth = {
       const match = await bcryptjs.compare(password, user.password);
       console.log('Login attempt result:', match ? 'successful' : 'failed');
       if (match) {
-        const { password, ...userWithoutPassword } = user;
+        const { password: _, ...userWithoutPassword } = user;
         return {
           ...userWithoutPassword,
           isAdmin: user.isAdmin || false // Assuming there's an isAdmin field in your User model
