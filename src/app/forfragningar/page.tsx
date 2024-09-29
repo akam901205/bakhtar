@@ -4,9 +4,18 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { IoInformationCircleOutline, IoSearchOutline } from 'react-icons/io5';
 
+// Define the structure of an inquiry
+interface Inquiry {
+  id: string;
+  createdAt: string;
+  business: string;
+  municipality: string;
+  status: string;
+}
+
 const ForfragningarPage = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [inquiries, setInquiries] = useState([]);
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [activeTab, setActiveTab] = useState('ongoing');
   const router = useRouter();
 
@@ -22,7 +31,7 @@ const ForfragningarPage = () => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
-          const data = await response.json();
+          const data: Inquiry[] = await response.json();
           setInquiries(data);
         } else {
           console.error('Failed to fetch inquiries');
