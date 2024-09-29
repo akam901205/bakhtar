@@ -4,8 +4,17 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { IoInformationCircleOutline, IoSearchOutline } from 'react-icons/io5';
 
+interface Business {
+  id: string;
+  name: string;
+  blocked: boolean;
+  membership: string;
+  renewalDate: string;
+  lastModified: string;
+}
+
 const MinaVerksamheterPage = () => {
-  const [businesses, setBusinesses] = useState([]);
+  const [businesses, setBusinesses] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
@@ -21,7 +30,7 @@ const MinaVerksamheterPage = () => {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
-          const data = await response.json();
+          const data: Business[] = await response.json();
           setBusinesses(data);
         } else {
           console.error('Failed to fetch businesses');
