@@ -4,31 +4,36 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { IoChevronDownOutline } from 'react-icons/io5';
 
-const Navigation = ({ isLoggedIn, isAdmin }) => {
+interface NavigationProps {
+  isLoggedIn: boolean;
+  isAdmin: boolean;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ isLoggedIn, isAdmin }) => {
   console.log('[Navigation] Rendering - isLoggedIn:', isLoggedIn, 'isAdmin:', isAdmin);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isVerksamheterOpen, setIsVerksamheterOpen] = useState(false);
   const [isVaraTjansterOpen, setIsVaraTjansterOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
-  const dropdownRef = useRef(null);
-  const verksamheterRef = useRef(null);
-  const varaTjansterRef = useRef(null);
-  const adminRef = useRef(null);
+  const dropdownRef = useRef<HTMLLIElement>(null);
+  const verksamheterRef = useRef<HTMLLIElement>(null);
+  const varaTjansterRef = useRef<HTMLLIElement>(null);
+  const adminRef = useRef<HTMLLIElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
-      if (verksamheterRef.current && !verksamheterRef.current.contains(event.target)) {
+      if (verksamheterRef.current && !verksamheterRef.current.contains(event.target as Node)) {
         setIsVerksamheterOpen(false);
       }
-      if (varaTjansterRef.current && !varaTjansterRef.current.contains(event.target)) {
+      if (varaTjansterRef.current && !varaTjansterRef.current.contains(event.target as Node)) {
         setIsVaraTjansterOpen(false);
       }
-      if (adminRef.current && !adminRef.current.contains(event.target)) {
+      if (adminRef.current && !adminRef.current.contains(event.target as Node)) {
         setIsAdminOpen(false);
       }
     };
@@ -38,9 +43,9 @@ const Navigation = ({ isLoggedIn, isAdmin }) => {
     };
   }, []);
 
-  const isActive = (href) => pathname === href;
+  const isActive = (href: string): boolean => pathname === href;
 
-  const handleAdminLinkClick = (path) => {
+  const handleAdminLinkClick = (path: string) => {
     console.log(`[Navigation] Admin link clicked: ${path}`);
     setIsAdminOpen(false);
   };

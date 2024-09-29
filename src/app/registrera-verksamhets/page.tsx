@@ -1,11 +1,27 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+interface FormData {
+  type: string;
+  name: string;
+  companyName: string;
+  orgNumber: string;
+  streetAddress: string;
+  postalCode: string;
+  city: string;
+  county: string;
+  municipality: string;
+  phone: string;
+  website: string;
+  koncern: string;
+  membership: string;
+}
+
 const RegisteraVerksamhetPage = () => {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     type: '',
     name: '',
     companyName: '',
@@ -21,7 +37,7 @@ const RegisteraVerksamhetPage = () => {
     membership: ''
   });
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prevState => ({
       ...prevState,
@@ -29,7 +45,7 @@ const RegisteraVerksamhetPage = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     // Here you would typically send the form data to your API
     console.log(formData);

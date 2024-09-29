@@ -1,10 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 
+interface FormData {
+  title: string;
+  description: string;
+  category: string;
+  clientAge: string;
+  urgency: string;
+  location: string;
+}
+
 export default function SkapaForfragan() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
     category: '',
@@ -13,7 +22,7 @@ export default function SkapaForfragan() {
     location: '',
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
@@ -21,7 +30,7 @@ export default function SkapaForfragan() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
     // Implement form submission logic here

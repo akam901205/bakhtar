@@ -6,7 +6,30 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-const ValkomenSida = () => {
+interface DashboardCardProps {
+  title: string;
+  value: string;
+  icon: string;
+}
+
+interface QuickLinkProps {
+  href: string;
+  text: string;
+  icon: string;
+}
+
+interface NewsItemProps {
+  title: string;
+  date: string;
+  content: string;
+}
+
+interface ChartDataPoint {
+  name: string;
+  förfrågningar: number;
+}
+
+const ValkomenSida: React.FC = () => {
   const router = useRouter();
   const [userName, setUserName] = useState('');
 
@@ -19,7 +42,7 @@ const ValkomenSida = () => {
     }
   }, [router]);
 
-  const chartData = [
+  const chartData: ChartDataPoint[] = [
     { name: 'Jan', förfrågningar: 65 },
     { name: 'Feb', förfrågningar: 59 },
     { name: 'Mar', förfrågningar: 80 },
@@ -106,7 +129,7 @@ const ValkomenSida = () => {
   );
 };
 
-const DashboardCard = ({ title, value, icon }) => (
+const DashboardCard: React.FC<DashboardCardProps> = ({ title, value, icon }) => (
   <motion.div
     whileHover={{ scale: 1.05 }}
     className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
@@ -121,7 +144,7 @@ const DashboardCard = ({ title, value, icon }) => (
   </motion.div>
 );
 
-const QuickLink = ({ href, text, icon }) => (
+const QuickLink: React.FC<QuickLinkProps> = ({ href, text, icon }) => (
   <Link href={href} className="block">
     <motion.div
       whileHover={{ scale: 1.05 }}
@@ -133,7 +156,7 @@ const QuickLink = ({ href, text, icon }) => (
   </Link>
 );
 
-const NewsItem = ({ title, date, content }) => (
+const NewsItem: React.FC<NewsItemProps> = ({ title, date, content }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}

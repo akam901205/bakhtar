@@ -4,29 +4,48 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import lanKommuner from '@/lib/lanKommuner';
 
-export default function SokVerksamhet() {
-  const [selectedLan, setSelectedLan] = useState('');
-  const [selectedKommun, setSelectedKommun] = useState('');
-  const [ageRange, setAgeRange] = useState({ min: 0, max: 100 });
-  const [targetGroups, setTargetGroups] = useState([]);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
+type TargetGroup = string;
+type Service = string;
 
-  const handleTargetGroupChange = (group) => {
+// Define the type for lanKommuner
+type LanKommuner = {
+  [key: string]: string[];
+};
+
+// Create a union type of all possible län names
+type LanName = keyof typeof lanKommuner;
+
+// Type assertion for lanKommuner
+const typedLanKommuner: LanKommuner = lanKommuner as LanKommuner;
+
+export default function SokVerksamhet() {
+  const [selectedLan, setSelectedLan] = useState<LanName | ''>('');
+  const [selectedKommun, setSelectedKommun] = useState<string>('');
+  const [ageRange, setAgeRange] = useState<{ min: number; max: number }>({ min: 0, max: 100 });
+  const [targetGroups, setTargetGroups] = useState<TargetGroup[]>([]);
+  const [selectedServices, setSelectedServices] = useState<Service[]>([]);
+  const [searchTerm, setSearchTerm] = useState<string>('');
+
+  const handleTargetGroupChange = (group: TargetGroup) => {
     setTargetGroups(prev => 
       prev.includes(group) ? prev.filter(g => g !== group) : [...prev, group]
     );
   };
 
-  const handleServiceChange = (service) => {
+  const handleServiceChange = (service: Service) => {
     setSelectedServices(prev => 
       prev.includes(service) ? prev.filter(s => s !== service) : [...prev, service]
     );
   };
 
-  const handleLanChange = (lan) => {
+  const handleLanChange = (lan: LanName | '') => {
     setSelectedLan(lan);
     setSelectedKommun('');
+  };
+
+  // Type guard function
+  const isValidLan = (lan: string): lan is LanName => {
+    return lan in typedLanKommuner;
   };
 
   return (
@@ -54,19 +73,19 @@ export default function SokVerksamhet() {
                   Var söker du verksamheter?
                 </label>
                 <select
-                  id="lan"
-                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
-                  value={selectedLan}
-                  onChange={(e) => handleLanChange(e.target.value)}
-                >
-                  <option value="">Välj län</option>
-                  {Object.keys(lanKommuner).map((lan) => (
-                    <option key={lan} value={lan}>{lan}</option>
-                  ))}
-                </select>
+        id="lan"
+        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+        value={selectedLan}
+        onChange={(e) => handleLanChange(e.target.value as LanName | '')}
+      >
+        <option value="">Välj län</option>
+        {(Object.keys(typedLanKommuner) as LanName[]).map((lan) => (
+          <option key={lan} value={lan}>{lan}</option>
+        ))}
+      </select>
               </div>
 
-              {selectedLan && (
+              {selectedLan && isValidLan(selectedLan) && (
                 <div className="mb-6">
                   <label className="block text-gray-700 font-medium mb-2" htmlFor="kommun">
                     Välj kommun
@@ -78,7 +97,7 @@ export default function SokVerksamhet() {
                     onChange={(e) => setSelectedKommun(e.target.value)}
                   >
                     <option value="">Alla kommuner</option>
-                    {lanKommuner[selectedLan].map((kommun) => (
+                    {typedLanKommuner[selectedLan].map((kommun) => (
                       <option key={kommun} value={kommun}>{kommun}</option>
                     ))}
                   </select>
@@ -132,7 +151,7 @@ export default function SokVerksamhet() {
             </div>
 
             <div>
-            <h2 className="text-2xl font-semibold mb-6 text-gray-700">Välj insats/lagrum</h2>
+              <h2 className="text-2xl font-semibold mb-6 text-gray-700">Välj insats/lagrum</h2>
               <div className="space-y-2 max-h-96 overflow-y-auto pr-4">
                 {[
                   'Konsulentstödd familjehemsvård - SoL 7.1.5',
