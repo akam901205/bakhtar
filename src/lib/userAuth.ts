@@ -5,23 +5,28 @@ import crypto from 'crypto'
 const userAuth = {
   async login(email: string, password: string) {
     try {
-      console.log('Attempting to find user with email:', email);
-      const user = await prisma.user.findUnique({ 
-        where: { email },
-        select: {
-          id: true,
-          email: true,
-          password: true,
-          isAdmin: true
-        }
-      });
-      console.log('Raw user data from database:', JSON.stringify(user, null, 2));
-      console.log('isAdmin from database - type:', typeof user?.isAdmin, 'value:', user?.isAdmin);
-
+      const user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
         console.log('Login failed: User not found');
         return null;
       }
+      const match = await bcryptjs.compare(password, user.password);
+      console.log('Login attempt result:', match ? 'successful' : 'failed');
+      if (match) {
+        // Explicitly select the fields we want to return
+        const { id, email, isAdmin } = user;
+        return {
+          id,
+          email,
+          isAdmin: isAdmin || false // Assuming there's an isAdmin field in your User model
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Error in userAuth.login:', error);
+      throw error;
+    }
+  },
 
       const match = await bcryptjs.compare(password, user.password);
       console.log('Password match result:', match);
