@@ -20,9 +20,16 @@ const LoginPage = () => {
     console.log('[LoginPage] Component mounted');
     const token = localStorage.getItem('token');
     const userEmail = localStorage.getItem('userEmail');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
     if (token && userEmail) {
-      console.log('[LoginPage] User already logged in, redirecting to welcome page');
-      router.replace('/valkommsida');
+      console.log('[LoginPage] User already logged in, redirecting');
+      if (isAdmin) {
+        console.log('[LoginPage] Admin user detected, redirecting to admin dashboard');
+        router.replace('/admin/dashboard');
+      } else {
+        console.log('[LoginPage] Regular user detected, redirecting to welcome page');
+        router.replace('/valkommsida');
+      }
     }
   }, [router]);
 
@@ -48,17 +55,31 @@ const LoginPage = () => {
           
           if (response.ok) {
             const data = await response.json();
-            console.log('[LoginPage] Login successful, received token:', data.token);
+            console.log('[LoginPage] Login successful, received data:', JSON.stringify(data, null, 2));
+            console.log('[LoginPage] Received isAdmin - type:', typeof data.isAdmin, 'value:', data.isAdmin);
+            
             localStorage.setItem('token', data.token);
             localStorage.setItem('userEmail', email);
-            console.log('[LoginPage] Token and email set in localStorage');
+            localStorage.setItem('isAdmin', data.isAdmin.toString());
+            console.log('[LoginPage] Token, email, and admin status set in localStorage');
+            console.log('[LoginPage] isAdmin in localStorage:', localStorage.getItem('isAdmin'));
             
             // Trigger a storage event to update other tabs/windows
             window.dispatchEvent(new Event('storage'));
-            console.log('[LoginPage] Attempting to redirect to /valkommsida');
+            console.log('[LoginPage] Attempting to redirect');
             
-            // Use router.replace instead of router.push
-            router.replace('/valkommsida');
+            try {
+              if (data.isAdmin) {
+                console.log('[LoginPage] Admin user detected, redirecting to admin dashboard');
+                await router.push('/admin/dashboard');
+              } else {
+                console.log('[LoginPage] Regular user detected, redirecting to welcome page');
+                await router.push('/valkommsida');
+              }
+            } catch (error) {
+              console.error('[LoginPage] Error during redirection:', error);
+              setError('Ett fel uppstod vid omdirigering');
+            }
           } else {
             const data = await response.json();
             console.error('[LoginPage] Login failed:', data.message);
