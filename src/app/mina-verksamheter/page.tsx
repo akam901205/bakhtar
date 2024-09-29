@@ -80,7 +80,7 @@ const MinaVerksamheterPage = () => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-blue-700">
-                Nedan listas de verksamheter som finns kopplade till din användare. Om det är första gången du loggar in, vänligen klicka på "Registrera verksamhet" för att lägga till din verksamhet i vår databas.
+                Nedan listas de verksamheter som finns kopplade till din användare. Om det är första gången du loggar in, vänligen klicka på &quot;Registrera verksamhet&quot; för att lägga till din verksamhet i vår databas.
               </p>
             </div>
           </div>
@@ -127,7 +127,7 @@ const MinaVerksamheterPage = () => {
                         <div className="text-sm text-gray-900">{business.lastModified}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                        <Link href={`/edit-business/${business.id}`}>Visa & Redigera</Link>
+                        <Link href={`/edit-business/${business.id}`}>Visa &amp; Redigera</Link>
                       </td>
                     </tr>
                   ))}

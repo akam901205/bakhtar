@@ -1,5 +1,4 @@
 'use client';
-
 import React from 'react';
 import SidebarNav from '../../components/SidebarNav';
 
@@ -26,7 +25,7 @@ const OmPlaceringsinfo = () => {
                 </p>
                
                 <blockquote className="border-l-4 border-teal-500 pl-4 italic my-8 text-gray-600">
-                  "Vår vision är att tillgängliggöra information som bidrar till att människor får ett bra liv utifrån individuella förutsättningar (ökad livskvalité)"
+                  &ldquo;Vår vision är att tillgängliggöra information som bidrar till att människor får ett bra liv utifrån individuella förutsättningar (ökad livskvalité)&rdquo;
                 </blockquote>
                
                 <p className="mb-6 text-gray-700 leading-relaxed">

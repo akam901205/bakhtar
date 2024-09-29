@@ -34,7 +34,7 @@ const RegisteraVerksamhetPage = () => {
     // Here you would typically send the form data to your API
     console.log(formData);
     // After successful submission, redirect to Mina verksamheter
-    // router.push('/mina-verksamheter');
+    router.push('/mina-verksamheter');
   };
 
   return (
