@@ -4,8 +4,11 @@ import { verify } from 'jsonwebtoken'
 
 export function middleware(request: NextRequest) {
   console.log('[Middleware] Handling request for:', request.nextUrl.pathname);
-  
-  const token = request.cookies.get('token')?.value
+
+  let token = request.cookies.get('token')?.value
+  if (!token) {
+    token = request.headers.get('Authorization')?.split(' ')[1]
+  }
   console.log('[Middleware] Token present:', !!token);
 
   if (request.nextUrl.pathname.startsWith('/admin')) {
@@ -14,16 +17,15 @@ export function middleware(request: NextRequest) {
       console.log('[Middleware] No token, redirecting to login');
       return NextResponse.redirect(new URL('/login', request.url))
     }
-
     try {
       const decoded = verify(token, process.env.JWT_SECRET as string) as { userId: number, email: string, isAdmin: boolean }
       console.log('[Middleware] Token decoded:', JSON.stringify(decoded));
-      
+     
       if (!decoded.isAdmin) {
         console.log('[Middleware] User is not admin, redirecting to unauthorized');
         return NextResponse.redirect(new URL('/unauthorized', request.url))
       }
-      
+     
       console.log('[Middleware] Admin access granted');
       return NextResponse.next()
     } catch (error) {
@@ -31,7 +33,6 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
-
   console.log('[Middleware] Allowing request to proceed');
   return NextResponse.next()
 }

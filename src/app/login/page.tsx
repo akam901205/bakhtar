@@ -62,7 +62,6 @@ const LoginPage = () => {
             localStorage.setItem('userEmail', email);
             localStorage.setItem('isAdmin', data.isAdmin.toString());
             console.log('[LoginPage] Token, email, and admin status set in localStorage');
-            console.log('[LoginPage] isAdmin in localStorage:', localStorage.getItem('isAdmin'));
             
             // Trigger a storage event to update other tabs/windows
             window.dispatchEvent(new Event('storage'));

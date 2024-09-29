@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
     console.log('User data from userAuth.login:', JSON.stringify(user, null, 2));
 
     if (user) {
-      // Create a JWT token with user information
       const token = sign(
         { userId: user.id, email: user.email, isAdmin: user.isAdmin },
         process.env.JWT_SECRET as string,
@@ -29,7 +28,6 @@ export async function POST(req: NextRequest) {
 
       const response = NextResponse.json(responseData, { status: 200 });
      
-      // Set the token in an HTTP-only cookie
       response.cookies.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',

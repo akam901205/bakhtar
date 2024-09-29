@@ -1,4 +1,5 @@
 'use client';
+
 import React, { useState, useEffect } from "react";
 import Header from "../components/Header";
 import Navigation from "../components/Navigation";
@@ -20,21 +21,14 @@ export default function ClientLayout({
     const checkLoginStatus = () => {
       const token = localStorage.getItem('token');
       const email = localStorage.getItem('userEmail');
-      console.log('[ClientLayout] Checking login status - token:', !!token, 'email:', email);
-      
+      const storedIsAdmin = localStorage.getItem('isAdmin');
+      console.log('[ClientLayout] Checking login status - token exists:', !!token, 'email:', email);
+     
       if (token && email) {
         setIsLoggedIn(true);
         setUserEmail(email);
-        
-        // Decode the JWT token to get the isAdmin status
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          setIsAdmin(payload.isAdmin);
-          console.log('[ClientLayout] User is logged in. isAdmin:', payload.isAdmin);
-        } catch (error) {
-          console.error('[ClientLayout] Error decoding token:', error);
-          setIsAdmin(false);
-        }
+        setIsAdmin(storedIsAdmin === 'true');
+        console.log('[ClientLayout] User is logged in. isAdmin:', storedIsAdmin);
       } else {
         setIsLoggedIn(false);
         setUserEmail(null);
@@ -42,7 +36,7 @@ export default function ClientLayout({
         console.log('[ClientLayout] User is not logged in');
       }
     };
-    
+   
     checkLoginStatus();
     window.addEventListener('storage', checkLoginStatus);
     return () => {
@@ -62,6 +56,7 @@ export default function ClientLayout({
       if (response.ok) {
         localStorage.removeItem('token');
         localStorage.removeItem('userEmail');
+        localStorage.removeItem('isAdmin');
         setIsLoggedIn(false);
         setUserEmail(null);
         setIsAdmin(false);
