@@ -4,13 +4,17 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { IoChevronDownOutline } from 'react-icons/io5';
 
-const Navigation = ({ isLoggedIn }) => {
+const Navigation = ({ isLoggedIn, isAdmin }) => {
+  console.log('[Navigation] Rendering - isLoggedIn:', isLoggedIn, 'isAdmin:', isAdmin);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isVerksamheterOpen, setIsVerksamheterOpen] = useState(false);
   const [isVaraTjansterOpen, setIsVaraTjansterOpen] = useState(false);
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
   const dropdownRef = useRef(null);
   const verksamheterRef = useRef(null);
   const varaTjansterRef = useRef(null);
+  const adminRef = useRef(null);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -24,6 +28,9 @@ const Navigation = ({ isLoggedIn }) => {
       if (varaTjansterRef.current && !varaTjansterRef.current.contains(event.target)) {
         setIsVaraTjansterOpen(false);
       }
+      if (adminRef.current && !adminRef.current.contains(event.target)) {
+        setIsAdminOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
@@ -32,6 +39,11 @@ const Navigation = ({ isLoggedIn }) => {
   }, []);
 
   const isActive = (href) => pathname === href;
+
+  const handleAdminLinkClick = (path) => {
+    console.log(`[Navigation] Admin link clicked: ${path}`);
+    setIsAdminOpen(false);
+  };
 
   return (
     <nav className="bg-white border-b">
@@ -68,7 +80,7 @@ const Navigation = ({ isLoggedIn }) => {
                     </li>
                     <li>
                       <Link
-                        href="/registrera-verksamhets"
+                        href="/registrera-verksamhet"
                         className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
                         onClick={() => setIsVerksamheterOpen(false)}
                       >
@@ -165,6 +177,60 @@ const Navigation = ({ isLoggedIn }) => {
               >
                 Eventkalender - Verksamheter
               </Link>
+            </li>
+          )}
+          {isLoggedIn && isAdmin && (
+            <li className="relative" ref={adminRef}>
+              <button
+                className={`inline-flex items-center py-4 text-gray-600 hover:text-teal-600 ${pathname.startsWith('/admin') ? 'text-teal-600 font-semibold' : ''}`}
+                onClick={() => {
+                  console.log('[Navigation] Admin button clicked');
+                  setIsAdminOpen(!isAdminOpen);
+                }}
+              >
+                Admin
+                <IoChevronDownOutline className="ml-1" />
+              </button>
+              {isAdminOpen && (
+                <ul className="absolute left-0 mt-2 w-56 bg-white border rounded-md shadow-lg z-10">
+                  <li>
+                    <Link
+                      href="/admin/dashboard"
+                      className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
+                      onClick={() => handleAdminLinkClick('/admin/dashboard')}
+                    >
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/users"
+                      className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
+                      onClick={() => handleAdminLinkClick('/admin/users')}
+                    >
+                      Hantera användare
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/businesses"
+                      className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
+                      onClick={() => handleAdminLinkClick('/admin/businesses')}
+                    >
+                      Hantera verksamheter
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/admin/requests"
+                      className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
+                      onClick={() => handleAdminLinkClick('/admin/requests')}
+                    >
+                      Hantera förfrågningar
+                    </Link>
+                  </li>
+                </ul>
+              )}
             </li>
           )}
         </ul>

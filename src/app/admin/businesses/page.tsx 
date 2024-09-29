@@ -1,0 +1,44 @@
+'use client';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function AdminBusinesses() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/check-status', {
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          throw new Error('Not authorized');
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setError('You are not authorized to view this page.');
+        router.push('/unauthorized');
+      }
+    };
+
+    checkAdminStatus();
+  }, [router]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  return (
+    <div>
+      <h1>Admin Businesses Page</h1>
+      {/* Add your admin businesses content here */}
+    </div>
+  );
+}

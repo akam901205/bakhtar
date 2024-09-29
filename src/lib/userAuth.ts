@@ -3,25 +3,43 @@ import bcryptjs from 'bcrypt'
 import crypto from 'crypto'
 
 const userAuth = {
-  async register(email: string, password: string, firstName: string, lastName: string) {
+  async login(email: string, password: string) {
     try {
-      console.log('Starting user registration process');
-      const hashedPassword = await bcryptjs.hash(password, 10);
-      console.log('Password hashed successfully');
-
-      const user = await prisma.user.create({
-        data: {
-          email,
-          password: hashedPassword,
-          firstName,
-          lastName,
-        },
+      console.log('Attempting to find user with email:', email);
+      const user = await prisma.user.findUnique({ 
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          password: true,
+          isAdmin: true
+        }
       });
-      console.log('User created successfully:', user.id);
-      return user.id;
+      console.log('Raw user data from database:', JSON.stringify(user, null, 2));
+      console.log('isAdmin from database - type:', typeof user?.isAdmin, 'value:', user?.isAdmin);
+
+      if (!user) {
+        console.log('Login failed: User not found');
+        return null;
+      }
+
+      const match = await bcryptjs.compare(password, user.password);
+      console.log('Password match result:', match);
+
+      if (match) {
+        const userData = {
+          id: user.id,
+          email: user.email,
+          isAdmin: user.isAdmin
+        };
+        console.log('User data being returned from userAuth.login:', JSON.stringify(userData, null, 2));
+        console.log('Returned isAdmin - type:', typeof userData.isAdmin, 'value:', userData.isAdmin);
+        return userData;
+      }
+      return null;
     } catch (error) {
-      console.error('Error in userAuth.register:', error);
-      throw error; // Re-throw the error to be caught by the API route
+      console.error('Error in userAuth.login:', error);
+      throw error;
     }
   },
 
@@ -34,7 +52,14 @@ const userAuth = {
       }
       const match = await bcryptjs.compare(password, user.password);
       console.log('Login attempt result:', match ? 'successful' : 'failed');
-      return match ? user : null;
+      if (match) {
+        const { password, ...userWithoutPassword } = user;
+        return {
+          ...userWithoutPassword,
+          isAdmin: user.isAdmin || false // Assuming there's an isAdmin field in your User model
+        };
+      }
+      return null;
     } catch (error) {
       console.error('Error in userAuth.login:', error);
       throw error;
