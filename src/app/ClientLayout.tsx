@@ -1,39 +1,37 @@
 'use client';
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from 'next/navigation';
 import Header from "../components/Header";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
-import { useRouter } from 'next/navigation';
 
 export default function ClientLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    console.log('[ClientLayout] Component mounted');
+    setIsMounted(true);
     const checkLoginStatus = () => {
       const token = localStorage.getItem('token');
       const email = localStorage.getItem('userEmail');
       const storedIsAdmin = localStorage.getItem('isAdmin');
-      console.log('[ClientLayout] Checking login status - token exists:', !!token, 'email:', email);
-     
+      
       if (token && email) {
         setIsLoggedIn(true);
         setUserEmail(email);
         setIsAdmin(storedIsAdmin === 'true');
-        console.log('[ClientLayout] User is logged in. isAdmin:', storedIsAdmin);
       } else {
         setIsLoggedIn(false);
         setUserEmail(null);
         setIsAdmin(false);
-        console.log('[ClientLayout] User is not logged in');
       }
     };
    
@@ -45,7 +43,6 @@ export default function ClientLayout({
   }, []);
 
   const handleLogout = async () => {
-    console.log('[ClientLayout] Logout initiated');
     try {
       const response = await fetch('/api/auth/logout', {
         method: 'POST',
@@ -60,23 +57,34 @@ export default function ClientLayout({
         setIsLoggedIn(false);
         setUserEmail(null);
         setIsAdmin(false);
-        console.log('[ClientLayout] Logout completed');
         router.push('/login');
       } else {
-        console.error('[ClientLayout] Logout failed');
+        console.error('Logout failed');
       }
     } catch (error) {
-      console.error('[ClientLayout] Error during logout:', error);
+      console.error('Error during logout:', error);
     }
   };
 
-  console.log('[ClientLayout] Rendering - isLoggedIn:', isLoggedIn, 'userEmail:', userEmail, 'isAdmin:', isAdmin);
- 
+  if (!isMounted) {
+    // Return a minimal layout or loading indicator
+    return <div>Laddar...</div>;
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
-      <Header isLoggedIn={isLoggedIn} userEmail={userEmail} onLogout={handleLogout} />
-      <Navigation isLoggedIn={isLoggedIn} isAdmin={isAdmin} />
-      <main className="flex-grow">{children}</main>
+      <Header 
+        isLoggedIn={isLoggedIn} 
+        userEmail={userEmail} 
+        onLogout={handleLogout} 
+      />
+      <Navigation 
+        isLoggedIn={isLoggedIn} 
+        isAdmin={isAdmin} 
+      />
+      <main className="flex-grow">
+        {children}
+      </main>
       <Footer />
     </div>
   );
