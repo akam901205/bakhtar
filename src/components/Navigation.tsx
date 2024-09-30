@@ -85,7 +85,7 @@ const Navigation: React.FC<NavigationProps> = ({ isLoggedIn, isAdmin }) => {
                     </li>
                     <li>
                       <Link
-                        href="/registrera-verksamhet"
+                        href="/registrera-verksamhets"
                         className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
                         onClick={() => setIsVerksamheterOpen(false)}
                       >

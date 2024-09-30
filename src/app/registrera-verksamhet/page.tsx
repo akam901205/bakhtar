@@ -1,45 +1,19 @@
 'use client';
 
-import React, { useState, ChangeEvent, FormEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
-interface FormData {
-  type: string;
-  name: string;
-  companyName: string;
-  orgNumber: string;
-  streetAddress: string;
-  postalCode: string;
-  city: string;
-  county: string;
-  municipality: string;
-  phone: string;
-  website: string;
-  koncern: string;
-  membership: string;
-}
-
-const RegisteraVerksamhetPage = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    type: '',
+export default function RegistreraVerksamhet() {
+  const [formData, setFormData] = useState({
     name: '',
-    companyName: '',
-    orgNumber: '',
-    streetAddress: '',
-    postalCode: '',
-    city: '',
-    county: '',
-    municipality: '',
+    email: '',
+    mobile: '',
     phone: '',
-    website: '',
-    koncern: '',
-    membership: ''
+    password: '',
+    confirmPassword: '',
   });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prevData => ({
       ...prevData,
@@ -47,164 +21,132 @@ const RegisteraVerksamhetPage = () => {
     }));
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    // Here you would typically send the form data to your API
-    console.log(formData);
-    // After successful submission, redirect to Mina verksamheter
-    // router.push('/mina-verksamheter');
+    console.log('Form submitted:', formData);
+    // Implement form submission logic here
   };
 
   return (
-    <div className="bg-gray-100 min-h-screen">
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Verksamheter</h1>
+    <div className="bg-gray-50 min-h-screen py-12">
+      <div className="container mx-auto px-4">
+        <motion.h1 
+          className="text-4xl md:text-5xl font-bold mb-8 text-center text-gray-800"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          Registrera verksamhet
+        </motion.h1>
+        <motion.div 
+          className="bg-white rounded-lg shadow-lg p-8 mb-12 max-w-3xl mx-auto"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
+            <p className="text-sm text-gray-700 mb-2">
+              Vi strävar efter att alla verksamheter i Sverige ska finnas med i ett samlat register för att underlätta för kommuner i sökandet av en vård- och behandlingsplats. Alla verksamheter kan kostnadsfritt lägga in information om verksamheten i vår databas.
+            </p>
+            <p className="text-sm text-gray-700 mb-2">
+              Vi har sorterat upp verksamheterna så att kommuner kan söka på tex. Lagrum, ålder och län. Sökresultatet kan kommunen i nästa steg filtrera på bland annat kön, antal platser, behandling, typ av boende och många andra sök-kriterier som skapar förutsättningar för en bra placering.
+            </p>
+            <p className="text-sm text-gray-700 mb-2">
+              I och med att nya tillståndsbeviljats och verksamheter läggs ner och köps upp så ber vi alla som använder vår tjänst att kontakta oss om det saknas verksamheter eller om informationen inte stämmer.
+            </p>
+            <p className="text-sm text-gray-700">
+              Ni kan själva lägga in en verksamhet som saknas. Sök gärna i vår databas först för att se att verksamheten inte redan finns. Vi vill undvika dubbletter. Om er verksamhet redan finns i systemet och ni vill ändra information så kan ni bli administratör över verksamheten. Varje verksamhet har en knapp längst ner " Är du ägare av den här verksamheten: klicka här". Klicka på knappen och följ instruktionerna så får ni tillgång till verksamheten inom 24 timmar. Vi verifierar att ni är den "rätte" ägaren av verksamheten. Om verksamheten inte finns med i vår databas så uppmanar vi er att registrera er verksamhet nedan. För att registrera en verksamhet börjar du med att registrera en användare/administratör.
+            </p>
+          </div>
 
-        <nav className="flex mb-6" aria-label="Tabs">
-          <Link 
-            href="/mina-verksamheter"
-            className="text-gray-600 hover:text-gray-800 pb-2 mr-4"
-          >
-            Mina verksamheter
-          </Link>
-          <Link 
-            href="/registrera-verksamhets"
-            className="text-blue-600 border-b-2 border-blue-600 pb-2 mr-4 font-medium"
-          >
-            Registrera verksamhet
-          </Link>
-        </nav>
-
-        <nav className="text-sm mb-4">
-          <ol className="list-none p-0 inline-flex">
-            <li className="flex items-center">
-              <Link href="/" className="text-blue-600 hover:text-blue-800">Hem</Link>
-              <span className="mx-2 text-gray-500">/</span>
-            </li>
-            <li className="flex items-center">
-              <Link href="/verksamheter" className="text-blue-600 hover:text-blue-800">Verksamheter</Link>
-              <span className="mx-2 text-gray-500">/</span>
-            </li>
-            <li className="text-gray-500">Registrera verksamhet</li>
-          </ol>
-        </nav>
-
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">Registrera verksamhet</h2>
-          <p className="mb-4 text-gray-600">Verksamheten är ett skyddat boende</p>
+          <h2 className="text-2xl font-semibold mb-6 text-gray-700">Registrera ny användare</h2>
+          <p className="mb-4 text-blue-600 hover:underline cursor-pointer">
+            Har du redan ett konto? Klicka här för att logga in
+          </p>
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="type">
-                Typ av verksamhet
-              </label>
-              <select
-                id="type"
-                name="type"
-                value={formData.type}
+            <div className="mb-4">
+              <label htmlFor="name" className="block text-gray-700 font-medium mb-2">Namn</label>
+              <input
+                type="text"
+                id="name"
+                name="name"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                value={formData.name}
                 onChange={handleChange}
-                className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              >
-                <option value="">Välj typ</option>
-                {/* Add your business types here */}
-              </select>
+                required
+              />
             </div>
-
-            <h3 className="text-xl font-semibold mb-4">Uppgifter om verksamheten</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-                  Verksamhetens namn* (enligt tillstånd om verksamheten är tillståndspliktig)
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="companyName">
-                  Företagsnamn* (tillståndshavare om verksamheten är tillståndspliktig)
-                </label>
-                <input
-                  type="text"
-                  id="companyName"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
-              {/* Add more form fields here */}
+            <div className="mb-4">
+              <label htmlFor="email" className="block text-gray-700 font-medium mb-2">E-post</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                value={formData.email}
+                onChange={handleChange}
+                required
+              />
             </div>
-
-            <h3 className="text-xl font-semibold mt-8 mb-4">Medlemskap</h3>
+            <div className="mb-4">
+              <label htmlFor="mobile" className="block text-gray-700 font-medium mb-2">Mobiltelefon</label>
+              <input
+                type="tel"
+                id="mobile"
+                name="mobile"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                value={formData.mobile}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="phone" className="block text-gray-700 font-medium mb-2">Telefon</label>
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="password" className="block text-gray-700 font-medium mb-2">Lösenord</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
             <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Välj vilken typ av medlemskap som önskas
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="border p-4 rounded">
-                  <input
-                    type="radio"
-                    id="membership1"
-                    name="membership"
-                    value="kostnadsfri"
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="membership1">
-                    Vi vill endast vara med i den kostnadsfria söktjänsten. Vad ingår?
-                  </label>
-                </div>
-                <div className="border p-4 rounded">
-                  <input
-                    type="radio"
-                    id="membership2"
-                    name="membership"
-                    value="bas12months"
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="membership2">
-                    Vi vill gå med i Marknadsföringstjänsten bas i 12 månader. Vad ingår?
-                  </label>
-                </div>
-                <div className="border p-4 rounded">
-                  <input
-                    type="radio"
-                    id="membership3"
-                    name="membership"
-                    value="plus12months"
-                    onChange={handleChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="membership3">
-                    Vi vill gå med i Marknadsföringstjänsten plus i 12 månader. Vad ingår?
-                  </label>
-                </div>
-              </div>
+              <label htmlFor="confirmPassword" className="block text-gray-700 font-medium mb-2">Bekräfta lösenord</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
             </div>
-
-            <div className="mt-8">
-              <button
-                type="submit"
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-              >
-                Skapa verksamhet
-              </button>
-            </div>
+            <motion.button
+              type="submit"
+              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out font-medium"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Registrera
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
-};
-
-export default RegisteraVerksamhetPage;
+}
