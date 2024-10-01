@@ -1,91 +1,44 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React from "react";
+import { SessionProvider, useSession, signOut } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import Header from "../components/Header";
 import Navigation from "../components/Navigation";
 import Footer from "../components/Footer";
 
-export default function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { data: session, status } = useSession();
   const router = useRouter();
 
-  useEffect(() => {
-    setIsMounted(true);
-    const checkLoginStatus = () => {
-      const token = localStorage.getItem('token');
-      const email = localStorage.getItem('userEmail');
-      const storedIsAdmin = localStorage.getItem('isAdmin');
-      
-      if (token && email) {
-        setIsLoggedIn(true);
-        setUserEmail(email);
-        setIsAdmin(storedIsAdmin === 'true');
-      } else {
-        setIsLoggedIn(false);
-        setUserEmail(null);
-        setIsAdmin(false);
-      }
-    };
-   
-    checkLoginStatus();
-    window.addEventListener('storage', checkLoginStatus);
-    return () => {
-      window.removeEventListener('storage', checkLoginStatus);
-    };
-  }, []);
-
   const handleLogout = async () => {
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.ok) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('isAdmin');
-        setIsLoggedIn(false);
-        setUserEmail(null);
-        setIsAdmin(false);
-        router.push('/login');
-      } else {
-        console.error('Logout failed');
-      }
-    } catch (error) {
-      console.error('Error during logout:', error);
-    }
+    await signOut({ redirect: false });
+    router.push('/login');
   };
-
-  if (!isMounted) {
-    // Return a minimal layout or loading indicator
-    return <div>Laddar...</div>;
-  }
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header 
-        isLoggedIn={isLoggedIn} 
-        userEmail={userEmail} 
-        onLogout={handleLogout} 
+      <Header
+        isLoggedIn={!!session}
+        userEmail={session?.user?.email || null}
+        onLogout={handleLogout}
       />
-      <Navigation 
-        isLoggedIn={isLoggedIn} 
-        isAdmin={isAdmin} 
+      <Navigation
+        isLoggedIn={!!session}
+        isAdmin={session?.user?.isAdmin || false}
       />
       <main className="flex-grow">
         {children}
       </main>
       <Footer />
     </div>
+  );
+}
+
+export function ClientLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SessionProvider>
+      <LayoutContent>{children}</LayoutContent>
+    </SessionProvider>
   );
 }

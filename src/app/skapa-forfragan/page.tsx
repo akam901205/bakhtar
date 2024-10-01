@@ -3,8 +3,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import lanKommuner from '@/lib/lanKommuner';
+import { useRouter } from 'next/navigation';
 
 export default function SkapaForfragan() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     lan: '',
     kommun: '',
@@ -35,10 +37,34 @@ export default function SkapaForfragan() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    // Implement form submission logic here
+    try {
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...formData,
+          clientAge: parseInt(formData.clientAge),
+          desiredStartDate: new Date(formData.desiredStartDate).toISOString(),
+          desiredResponseDate: new Date(formData.desiredResponseDate).toISOString(),
+        }),
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Request created successfully:', data);
+        alert('Förfrågan har skapats och väntar på godkännande. Du kommer att meddelas när den har godkänts.');
+        router.push('/bekraftelse');
+      } else {
+        const errorData = await response.json();
+        console.error('Server error:', errorData);
+        alert(`Fel vid skapande av förfrågan: ${errorData.error || 'Okänt fel'}`);
+      }
+    } catch (error) {
+      console.error('Client error:', error);
+      alert('Ett fel uppstod vid anslutning till servern. Vänligen försök igen senare.');
+    }
   };
 
   return (

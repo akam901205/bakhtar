@@ -58,15 +58,31 @@ model Business {
 }
 
 model Request {
-  id         Int      @id @default(autoincrement())
-  status     String
-  businessId Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  userId     Int
-  business   Business @relation(fields: [businessId], references: [id])
-  user       User     @relation(fields: [userId], references: [id])
+  id                  Int      @id @default(autoincrement())
+  status              String   @default("PENDING")
+  businessId          Int
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  userId              Int?
+  clientAge           Int
+  clientGender        String
+  clientNeeds         String   @db.Text
+  description         String   @db.Text
+  desiredLocation     String
+  desiredResponseDate DateTime
+  desiredStartDate    DateTime
+  email               String
+  interventionType    String
+  isAnonymous         Boolean  @default(false)
+  kommun              String
+  lan                 String
+  mobile              String
+  name                String
+  phone               String
+  sentToOthers        Boolean
+  business            Business @relation(fields: [businessId], references: [id])
+  user                User?    @relation(fields: [userId], references: [id])
 
-  @@index([businessId], map: "Request_businessId_fkey")
   @@index([userId], map: "Request_userId_fkey")
+  @@index([businessId], map: "Request_businessId_fkey")
 }

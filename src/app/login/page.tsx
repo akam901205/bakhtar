@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -15,15 +16,12 @@ const LoginPage = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    console.log('[LoginPage] Component mounted');
-    const token = localStorage.getItem('token');
-    const userEmail = localStorage.getItem('userEmail');
-    const isAdmin = localStorage.getItem('isAdmin') === 'true';
-    if (token && userEmail) {
+    if (session) {
       console.log('[LoginPage] User already logged in, redirecting');
-      if (isAdmin) {
+      if (session.user.isAdmin) {
         console.log('[LoginPage] Admin user detected, redirecting to admin dashboard');
         router.replace('/admin/dashboard');
       } else {
@@ -31,7 +29,7 @@ const LoginPage = () => {
         router.replace('/valkommsida');
       }
     }
-  }, [router]);
+  }, [session, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,47 +40,19 @@ const LoginPage = () => {
       case 'login':
         try {
           console.log('[LoginPage] Login attempt for email:', email);
-          const response = await fetch('/api/auth/login', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password, remember: rememberMe }),
-            credentials: 'include',
+          const result = await signIn('credentials', {
+            redirect: false,
+            email,
+            password,
+            remember: rememberMe,
           });
           
-          console.log('[LoginPage] Login response status:', response.status);
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log('[LoginPage] Login successful, received data:', JSON.stringify(data, null, 2));
-            console.log('[LoginPage] Received isAdmin - type:', typeof data.isAdmin, 'value:', data.isAdmin);
-            
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('userEmail', email);
-            localStorage.setItem('isAdmin', data.isAdmin.toString());
-            console.log('[LoginPage] Token, email, and admin status set in localStorage');
-            
-            // Trigger a storage event to update other tabs/windows
-            window.dispatchEvent(new Event('storage'));
-            console.log('[LoginPage] Attempting to redirect');
-            
-            try {
-              if (data.isAdmin) {
-                console.log('[LoginPage] Admin user detected, redirecting to admin dashboard');
-                await router.push('/admin/dashboard');
-              } else {
-                console.log('[LoginPage] Regular user detected, redirecting to welcome page');
-                await router.push('/valkommsida');
-              }
-            } catch (error) {
-              console.error('[LoginPage] Error during redirection:', error);
-              setError('Ett fel uppstod vid omdirigering');
-            }
-          } else {
-            const data = await response.json();
-            console.error('[LoginPage] Login failed:', data.message);
-            setError(data.message || 'Inloggning misslyckades');
+          if (result?.error) {
+            console.error('[LoginPage] Login failed:', result.error);
+            setError(result.error);
+          } else if (result?.ok) {
+            console.log('[LoginPage] Login successful');
+            router.push('/valkommsida');
           }
         } catch (error) {
           console.error('[LoginPage] Error during login:', error);
@@ -319,6 +289,10 @@ const LoginPage = () => {
         return 'Skicka återställningslänk';
     }
   };
+
+  if (status === 'loading') {
+    return <div>Laddar...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
