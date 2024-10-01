@@ -1,3 +1,5 @@
+"use client"
+
 import React, { HTMLAttributes } from 'react'
 
 interface AlertProps extends HTMLAttributes<HTMLDivElement> {

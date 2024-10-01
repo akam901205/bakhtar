@@ -1,3 +1,5 @@
+"use client"
+
 import React, { InputHTMLAttributes, forwardRef } from 'react'
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
