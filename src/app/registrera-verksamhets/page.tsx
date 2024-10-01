@@ -1,9 +1,11 @@
 'use client';
-import React, { useState, ChangeEvent, FormEvent } from 'react';
+import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import lanKommuner from '../../lib/lanKommuner';
 
 interface FormData {
+  isSkyddatBoende: boolean;
   type: string;
   name: string;
   companyName: string;
@@ -16,12 +18,12 @@ interface FormData {
   phone: string;
   website: string;
   koncern: string;
-  membership: string;
 }
 
 const RegisteraVerksamhetPage = () => {
   const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
+    isSkyddatBoende: false,
     type: '',
     name: '',
     companyName: '',
@@ -33,30 +35,51 @@ const RegisteraVerksamhetPage = () => {
     municipality: '',
     phone: '',
     website: '',
-    koncern: '',
-    membership: ''
+    koncern: ''
   });
 
+  const [kommuner, setKommuner] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (formData.county) {
+      setKommuner(lanKommuner[formData.county] || []);
+      setFormData(prevState => ({ ...prevState, municipality: '' }));
+    }
+  }, [formData.county]);
+
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const newValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     setFormData(prevState => ({
       ...prevState,
-      [name]: value
+      [name]: newValue
     }));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Here you would typically send the form data to your API
-    console.log(formData);
-    // After successful submission, redirect to Mina verksamheter
-    router.push('/mina-verksamheter');
+    try {
+      const response = await fetch('/api/businesses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        router.push('/mina-verksamheter');
+      } else {
+        console.error('Failed to create business');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
   };
 
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6 text-gray-800">Verksamheter</h1>
+        <h1 className="text-3xl font-bold mb-6 text-gray-800">Registrera verksamhet</h1>
 
         <nav className="flex mb-6" aria-label="Tabs">
           <Link 
@@ -88,8 +111,20 @@ const RegisteraVerksamhetPage = () => {
         </nav>
 
         <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-2xl font-semibold mb-4">Registrera verksamhet</h2>
-          <p className="mb-4 text-gray-600">Verksamheten är ett skyddat boende</p>
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Registrera verksamhet</h2>
+          <div className="mb-4">
+            <input
+              type="checkbox"
+              id="isSkyddatBoende"
+              name="isSkyddatBoende"
+              checked={formData.isSkyddatBoende}
+              onChange={handleInputChange}
+              className="mr-2"
+            />
+            <label htmlFor="isSkyddatBoende" className="text-gray-700">
+              Verksamheten är ett skyddat boende
+            </label>
+          </div>
 
           <form onSubmit={handleSubmit}>
             <div className="mb-6">
@@ -104,11 +139,13 @@ const RegisteraVerksamhetPage = () => {
                 className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
               >
                 <option value="">Välj typ</option>
-                {/* Add your business types here */}
+                <option value="SOL">SOL</option>
+                <option value="LSS">LSS</option>
+                <option value="Familjehem">Familjehem</option>
               </select>
             </div>
 
-            <h3 className="text-xl font-semibold mb-4">Uppgifter om verksamheten</h3>
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Uppgifter om verksamheten</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -139,54 +176,139 @@ const RegisteraVerksamhetPage = () => {
                   required
                 />
               </div>
-              {/* Add more form fields here */}
-            </div>
-
-            <h3 className="text-xl font-semibold mt-8 mb-4">Medlemskap</h3>
-            <div className="mb-6">
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Välj vilken typ av medlemskap som önskas
-              </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="border p-4 rounded">
-                  <input
-                    type="radio"
-                    id="membership1"
-                    name="membership"
-                    value="kostnadsfri"
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="membership1">
-                    Vi vill endast vara med i den kostnadsfria söktjänsten. Vad ingår?
-                  </label>
-                </div>
-                <div className="border p-4 rounded">
-                  <input
-                    type="radio"
-                    id="membership2"
-                    name="membership"
-                    value="bas12months"
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="membership2">
-                    Vi vill gå med i Marknadsföringstjänsten bas i 12 månader. Vad ingår?
-                  </label>
-                </div>
-                <div className="border p-4 rounded">
-                  <input
-                    type="radio"
-                    id="membership3"
-                    name="membership"
-                    value="plus12months"
-                    onChange={handleInputChange}
-                    className="mr-2"
-                  />
-                  <label htmlFor="membership3">
-                    Vi vill gå med i Marknadsföringstjänsten plus i 12 månader. Vad ingår?
-                  </label>
-                </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="orgNumber">
+                  Org nummer*
+                </label>
+                <input
+                  type="text"
+                  id="orgNumber"
+                  name="orgNumber"
+                  value={formData.orgNumber}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="streetAddress">
+                  Gatuadress*
+                </label>
+                <input
+                  type="text"
+                  id="streetAddress"
+                  name="streetAddress"
+                  value={formData.streetAddress}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="postalCode">
+                  Postnummer*
+                </label>
+                <input
+                  type="text"
+                  id="postalCode"
+                  name="postalCode"
+                  value={formData.postalCode}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="city">
+                  Ort*
+                </label>
+                <input
+                  type="text"
+                  id="city"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="county">
+                  Län*
+                </label>
+                <select
+                  id="county"
+                  name="county"
+                  value={formData.county}
+                  onChange={handleInputChange}
+                  className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                >
+                  <option value="">Välj län</option>
+                  {Object.keys(lanKommuner).map((lan) => (
+                    <option key={lan} value={lan}>{lan}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="municipality">
+                  Kommun*
+                </label>
+                <select
+                  id="municipality"
+                  name="municipality"
+                  value={formData.municipality}
+                  onChange={handleInputChange}
+                  className="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                  disabled={!formData.county}
+                >
+                  <option value="">Välj kommun</option>
+                  {kommuner.map((kommun) => (
+                    <option key={kommun} value={kommun}>{kommun}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="phone">
+                  Telefon*
+                </label>
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="website">
+                  Hemsida*
+                </label>
+                <input
+                  type="url"
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="koncern">
+                  Ev koncern/kedja
+                </label>
+                <input
+                  type="text"
+                  id="koncern"
+                  name="koncern"
+                  value={formData.koncern}
+                  onChange={handleInputChange}
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
               </div>
             </div>
 

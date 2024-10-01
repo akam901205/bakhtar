@@ -30,16 +30,13 @@ export default async function AdminRequestsPage() {
   }
 
   const pendingRequests = await prisma.request.findMany({
-    where: { status: 'VÄNTANDE' },
+    where: { status: 'VÄNTANDE_GODKÄNNANDE' },
     include: { user: true },
   });
 
   return (
     <div className="container mx-auto p-4 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard - Väntande förfrågningar</h1>
-      <div className="bg-white rounded-lg shadow-md">
-        <AdminRequestList requests={pendingRequests} />
-      </div>
+      <AdminRequestList requests={pendingRequests} />
     </div>
   );
 }

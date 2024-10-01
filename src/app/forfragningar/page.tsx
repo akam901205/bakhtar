@@ -4,19 +4,26 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { IoInformationCircleOutline, IoSearchOutline } from 'react-icons/io5';
 
-// Define the structure of an inquiry
 interface Inquiry {
   id: string;
   createdAt: string;
   business: string;
   municipality: string;
   status: string;
+  desiredResponseDate: string;
+  clientGender: string;
+  clientAge: number;
+  description: string;
+  clientNeeds: string;
+  interventionType: string;
+  lan: string;
 }
 
-const ForfragningarPage = () => {
+const ForfragningarPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [activeTab, setActiveTab] = useState('ongoing');
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -48,6 +55,10 @@ const ForfragningarPage = () => {
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
   }
+
+  const handleShowDetails = (inquiry: Inquiry) => {
+    setSelectedInquiry(inquiry);
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -120,7 +131,7 @@ const ForfragningarPage = () => {
                 <table className="min-w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      {['Förfrågan ID', 'Skapad', 'Verksamhet', 'Kommun', 'Status'].map((header) => (
+                      {['#', 'Verksamhet', 'Inkom', 'Kommun', 'Svar önskas', 'Brukare', 'Status', ''].map((header) => (
                         <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                           {header}
                         </th>
@@ -128,16 +139,26 @@ const ForfragningarPage = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {inquiries.map((inquiry, index) => (
-                      <tr key={index}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{inquiry.id}</td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inquiry.createdAt}</td>
+                    {inquiries.map((inquiry) => (
+                      <tr key={inquiry.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{`JÄR-${inquiry.id}`}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inquiry.business}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(inquiry.createdAt).toLocaleString('sv-SE')}</td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{inquiry.municipality}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(inquiry.desiredResponseDate).toLocaleString('sv-SE')}</td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{`${inquiry.clientGender} ${inquiry.clientAge} år`}</td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
                             {inquiry.status}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => handleShowDetails(inquiry)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Visa
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -169,6 +190,53 @@ const ForfragningarPage = () => {
             </div>
           </div>
         </div>
+
+        {selectedInquiry && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full" id="my-modal">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 shadow-lg rounded-md bg-white">
+              <div className="mt-3">
+                <h3 className="text-2xl font-bold text-gray-900 mb-4">Besvara förfrågan JÄR-{selectedInquiry.id}</h3>
+                <p className="text-md text-gray-600 mb-6">
+                  {new Date(selectedInquiry.desiredResponseDate) < new Date() 
+                    ? "Svarstid har tyvärr passerats och det är inte längre möjligt att besvara denna förfrågan"
+                    : "Här kan du besvara förfrågan"}
+                </p>
+                <div className="bg-gray-50 p-6 rounded-lg">
+                  <h4 className="font-bold text-xl text-gray-800 mb-4">Förfrågan detaljer:</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    <div>
+                      <p className="mb-2"><span className="font-semibold">Verksamhet:</span> {selectedInquiry.business}</p>
+                      <p className="mb-2"><span className="font-semibold">Svar önskas senast:</span> {new Date(selectedInquiry.desiredResponseDate).toLocaleString('sv-SE')}</p>
+                      <p className="mb-2"><span className="font-semibold">Klient:</span> {selectedInquiry.clientGender} {selectedInquiry.clientAge} år</p>
+                      <p className="mb-2"><span className="font-semibold">Interventionstyp:</span> {selectedInquiry.interventionType}</p>
+                    </div>
+                    <div>
+                      <p className="mb-2"><span className="font-semibold">Län:</span> {selectedInquiry.lan}</p>
+                      <p className="mb-2"><span className="font-semibold">Kommun:</span> {selectedInquiry.municipality}</p>
+                      <p className="mb-2"><span className="font-semibold">Status:</span> {selectedInquiry.status}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="mb-2"><span className="font-semibold">Beskrivning:</span></p>
+                    <p className="bg-white p-3 rounded">{selectedInquiry.description}</p>
+                  </div>
+                  <div className="mt-4">
+                    <p className="mb-2"><span className="font-semibold">Klientens behov:</span></p>
+                    <p className="bg-white p-3 rounded">{selectedInquiry.clientNeeds}</p>
+                  </div>
+                </div>
+                <div className="mt-6">
+                  <button
+                    className="w-full px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                    onClick={() => setSelectedInquiry(null)}
+                  >
+                    Stäng
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

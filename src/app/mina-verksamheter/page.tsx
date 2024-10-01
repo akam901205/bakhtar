@@ -16,6 +16,7 @@ interface Business {
 const MinaVerksamheterPage = () => {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -43,6 +44,10 @@ const MinaVerksamheterPage = () => {
     };
     fetchBusinesses();
   }, [router]);
+
+  const filteredBusinesses = businesses.filter(business =>
+    business.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -102,6 +107,8 @@ const MinaVerksamheterPage = () => {
                 type="text"
                 placeholder="Sök i tabellen"
                 className="w-full p-2 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
               <IoSearchOutline className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             </div>
@@ -118,7 +125,7 @@ const MinaVerksamheterPage = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {businesses.map((business) => (
+                  {filteredBusinesses.map((business) => (
                     <tr key={business.id}>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-blue-600">{business.name}</div>
