@@ -2,12 +2,38 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import lanKommuner from '@/lib/lanKommuner';
 import { useRouter } from 'next/navigation';
+import lanKommuner from '@/lib/lanKommuner';
+import PreviewModal from '../../components/PreviewModal'; // Ensure this path is correct
+
+
+interface Client {
+  clientGender: string;
+  clientAge: string;
+}
+
+interface FormData {
+  lan: string;
+  kommun: string;
+  name: string;
+  email: string;
+  phone: string;
+  mobile: string;
+  isAnonymous: boolean;
+  clients: Client[];
+  description: string;
+  clientNeeds: string;
+  interventionType: string;
+  desiredLocation: string;
+  desiredStartDate: string;
+  desiredResponseDate: string;
+  sentToOthers: boolean;
+  agreeToDataStorage: boolean;
+}
 
 export default function SkapaForfragan() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     lan: '',
     kommun: '',
     name: '',
@@ -15,8 +41,7 @@ export default function SkapaForfragan() {
     phone: '',
     mobile: '',
     isAnonymous: false,
-    clientGender: '',
-    clientAge: '',
+    clients: [{ clientGender: '', clientAge: '' }],
     description: '',
     clientNeeds: '',
     interventionType: '',
@@ -27,13 +52,33 @@ export default function SkapaForfragan() {
     agreeToDataStorage: false,
   });
 
-  const [clientCount, setClientCount] = useState(1);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, clientIndex?: number) => {
+    const { name, value, type } = e.target;
+    setFormData(prevData => {
+      if (clientIndex !== undefined && name.startsWith('client')) {
+        const newClients = [...prevData.clients];
+        newClients[clientIndex] = {
+          ...newClients[clientIndex],
+          [name.replace(`-${clientIndex}`, '')]: value
+        };
+        return {
+          ...prevData,
+          clients: newClients
+        };
+      }
+      return {
+        ...prevData,
+        [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      };
+    });
+  };
+
+  const addClient = () => {
     setFormData(prevData => ({
       ...prevData,
-      [name]: type === 'checkbox' ? checked : value
+      clients: [...prevData.clients, { clientGender: '', clientAge: '' }]
     }));
   };
 
@@ -83,15 +128,6 @@ export default function SkapaForfragan() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-lg">
-            <p className="text-sm text-blue-700">
-              Socialtjänsten har möjlighet att lämna en förfrågan via formuläret. Fyll i nödvändig information som är av vikt för att möjliggöra en bra placering. Om vi upplever att information saknas kontaktar vi dig för kompletterande frågor. Vi tar emot alla typer av förfrågningar: SoL, LSS, missbruksvård, psykiatri, barn, familjer, vuxna, äldre, ensamkommande, LRV, LPT, LVU och LVM. Ange när du vill ha svar och beskriv problematiken. Vi gör en sammanställning av verksamheter som tagit del av klientbeskrivningen och har ledig plats. I sammanställningen ingår kontaktuppgifter till verksamhetschef och länk till verksamhetens hemsida.
-            </p>
-            <p className="text-sm font-bold text-blue-700 mt-2">
-              Vi lämnar aldrig ut dina kontaktuppgifter utan ditt medgivande!
-            </p>
-          </div>
-
           <form onSubmit={handleSubmit}>
             <h2 className="text-2xl font-semibold mb-4 text-gray-700">Kontaktuppgifter</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -196,57 +232,57 @@ export default function SkapaForfragan() {
             </div>
 
             <h2 className="text-2xl font-semibold mb-4 text-gray-700">Om klienten/brukaren</h2>
-            {[...Array(clientCount)].map((_, index) => (
-              <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-2 text-gray-700">Klient {index + 1}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-gray-700 font-medium mb-2">Kön *</label>
-                    <div className="flex space-x-4">
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          name={`clientGender${index}`}
-                          value="Kvinna/Flicka"
-                          checked={formData[`clientGender${index}`] === "Kvinna/Flicka"}
-                          onChange={handleChange}
-                          className="form-radio h-5 w-5 text-blue-600"
-                        />
-                        <span className="ml-2 text-gray-700">Kvinna/Flicka</span>
-                      </label>
-                      <label className="inline-flex items-center">
-                        <input
-                          type="radio"
-                          name={`clientGender${index}`}
-                          value="Man/Pojke"
-                          checked={formData[`clientGender${index}`] === "Man/Pojke"}
-                          onChange={handleChange}
-                          className="form-radio h-5 w-5 text-blue-600"
-                        />
-                        <span className="ml-2 text-gray-700">Man/Pojke</span>
-                      </label>
-                    </div>
-                  </div>
-                  <div>
-                    <label htmlFor={`clientAge${index}`} className="block text-gray-700 font-medium mb-2">Ålder på klienten *</label>
+        {formData.clients.map((client, index) => (
+          <div key={index} className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <h3 className="text-lg font-semibold mb-2 text-gray-700">Klient {index + 1}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="block text-gray-700 font-medium mb-2">Kön *</label>
+                <div className="flex space-x-4">
+                  <label className="inline-flex items-center">
                     <input
-                      type="number"
-                      id={`clientAge${index}`}
-                      name={`clientAge${index}`}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
-                      value={formData[`clientAge${index}`] || ''}
-                      onChange={handleChange}
-                      required
+                      type="radio"
+                      name={`clientGender-${index}`}
+                      value="Kvinna/Flicka"
+                      checked={client.clientGender === "Kvinna/Flicka"}
+                      onChange={(e) => handleChange(e, index)}
+                      className="form-radio h-5 w-5 text-blue-600"
                     />
-                  </div>
+                    <span className="ml-2 text-gray-700">Kvinna/Flicka</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name={`clientGender-${index}`}
+                      value="Man/Pojke"
+                      checked={client.clientGender === "Man/Pojke"}
+                      onChange={(e) => handleChange(e, index)}
+                      className="form-radio h-5 w-5 text-blue-600"
+                    />
+                    <span className="ml-2 text-gray-700">Man/Pojke</span>
+                  </label>
                 </div>
               </div>
-            ))}
+              <div>
+                <label htmlFor={`clientAge-${index}`} className="block text-gray-700 font-medium mb-2">Ålder på klienten *</label>
+                <input
+                  type="number"
+                  id={`clientAge-${index}`}
+                  name={`clientAge-${index}`}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                  value={client.clientAge}
+                  onChange={(e) => handleChange(e, index)}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+        ))}
 
             <button
               type="button"
               className="mb-6 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition duration-300 ease-in-out"
-              onClick={() => setClientCount(prev => prev + 1)}
+              onClick={addClient}
             >
               Lägg till ytterligare klient +
             </button>
@@ -368,6 +404,7 @@ export default function SkapaForfragan() {
               <button
                 type="button"
                 className="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400 transition duration-300 ease-in-out font-medium"
+                onClick={() => setIsPreviewOpen(true)}
               >
                 Förhandsgranska förfrågan
               </button>
@@ -383,6 +420,11 @@ export default function SkapaForfragan() {
           </form>
         </motion.div>
       </div>
+      <PreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        formData={formData}
+      />
     </div>
   );
 }

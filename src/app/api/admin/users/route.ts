@@ -1,32 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { getServerSession } from "next-auth/next";
+import { authOptions } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-async function verifyToken(token: string) {
-  try {
-    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-    const { payload } = await jwtVerify(token, secret);
-    return payload;
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return null;
+async function checkAuth() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized: No session' }, { status: 401 });
   }
+  if (!(session.user as any).isAdmin) {
+    return NextResponse.json({ error: 'Forbidden: Not an admin' }, { status: 403 });
+  }
+  return null;
 }
 
 export async function GET(request: NextRequest) {
-  console.log("[API] Handling GET request for users");
-
-  const token = request.cookies.get('token')?.value;
-  if (!token) {
-    console.log("[API] No token found");
-    return NextResponse.json({ error: 'Unauthorized: No token' }, { status: 401 });
-  }
-
-  const payload = await verifyToken(token);
-  if (!payload || !(payload as any).isAdmin) {
-    console.log("[API] User is not authorized or not an admin");
-    return NextResponse.json({ error: 'Unauthorized: Not an admin' }, { status: 401 });
-  }
+  const authResponse = await checkAuth();
+  if (authResponse) return authResponse;
 
   try {
     const users = await prisma.user.findMany({
@@ -47,19 +37,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  console.log("[API] Handling POST request for users");
-
-  const token = request.cookies.get('token')?.value;
-  if (!token) {
-    console.log("[API] No token found");
-    return NextResponse.json({ error: 'Unauthorized: No token' }, { status: 401 });
-  }
-
-  const payload = await verifyToken(token);
-  if (!payload || !(payload as any).isAdmin) {
-    console.log("[API] User is not authorized or not an admin");
-    return NextResponse.json({ error: 'Unauthorized: Not an admin' }, { status: 401 });
-  }
+  const authResponse = await checkAuth();
+  if (authResponse) return authResponse;
 
   try {
     const userData = await request.json();
@@ -74,19 +53,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-  console.log("[API] Handling PUT request for users");
-
-  const token = request.cookies.get('token')?.value;
-  if (!token) {
-    console.log("[API] No token found");
-    return NextResponse.json({ error: 'Unauthorized: No token' }, { status: 401 });
-  }
-
-  const payload = await verifyToken(token);
-  if (!payload || !(payload as any).isAdmin) {
-    console.log("[API] User is not authorized or not an admin");
-    return NextResponse.json({ error: 'Unauthorized: Not an admin' }, { status: 401 });
-  }
+  const authResponse = await checkAuth();
+  if (authResponse) return authResponse;
 
   try {
     const { id, ...updateData } = await request.json();
@@ -102,19 +70,8 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-  console.log("[API] Handling DELETE request for users");
-
-  const token = request.cookies.get('token')?.value;
-  if (!token) {
-    console.log("[API] No token found");
-    return NextResponse.json({ error: 'Unauthorized: No token' }, { status: 401 });
-  }
-
-  const payload = await verifyToken(token);
-  if (!payload || !(payload as any).isAdmin) {
-    console.log("[API] User is not authorized or not an admin");
-    return NextResponse.json({ error: 'Unauthorized: Not an admin' }, { status: 401 });
-  }
+  const authResponse = await checkAuth();
+  if (authResponse) return authResponse;
 
   try {
     const { searchParams } = new URL(request.url);

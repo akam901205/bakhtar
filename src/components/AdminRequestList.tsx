@@ -1,7 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "/components/ui/table";
-import { Button } from "/components/ui/button";
+import { Button } from "../../components/ui/button";
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const AdminRequestList = ({ requests: initialRequests }) => {
