@@ -37,7 +37,7 @@ export default function SkapaForfragan() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const response = await fetch('/api/requests', {
@@ -54,7 +54,6 @@ export default function SkapaForfragan() {
       if (response.ok) {
         const data = await response.json();
         console.log('Request created successfully:', data);
-        alert('Förfrågan har skapats och väntar på godkännande. Du kommer att meddelas när den har godkänts.');
         router.push('/bekraftelse');
       } else {
         const errorData = await response.json();
