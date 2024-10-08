@@ -226,6 +226,15 @@ const Navigation: React.FC<NavigationProps> = ({ isLoggedIn, isAdmin }) => {
                     </Link>
                   </li>
                   <li>
+  <Link
+    href="/admin/companies"
+    className="block px-4 py-2 text-gray-800 hover:bg-teal-50"
+    onClick={() => handleAdminLinkClick('/admin/companies')}
+  >
+    Hantera företag
+  </Link>
+</li>
+                  <li>
                     <Link
                       href="/admin/requests"
                       className="block px-4 py-2 text-gray-800 hover:bg-teal-50"

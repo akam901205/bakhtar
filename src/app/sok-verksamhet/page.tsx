@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import lanKommuner from '@/lib/lanKommuner';
 
@@ -19,6 +20,7 @@ type LanName = keyof typeof lanKommuner;
 const typedLanKommuner: LanKommuner = lanKommuner as LanKommuner;
 
 export default function SokVerksamhet() {
+  const router = useRouter();
   const [selectedLan, setSelectedLan] = useState<LanName | ''>('');
   const [selectedKommun, setSelectedKommun] = useState<string>('');
   const [ageRange, setAgeRange] = useState<{ min: number; max: number }>({ min: 0, max: 100 });
@@ -48,6 +50,22 @@ export default function SokVerksamhet() {
     return lan in typedLanKommuner;
   };
 
+  const handleSearch = () => {
+    // Construct the search query
+    const searchQuery = new URLSearchParams({
+      lan: selectedLan,
+      kommun: selectedKommun,
+      ageMin: ageRange.min.toString(),
+      ageMax: ageRange.max.toString(),
+      targetGroups: targetGroups.join(','),
+      services: selectedServices.join(','),
+      searchTerm: searchTerm
+    }).toString();
+
+    // Navigate to the search results page
+    router.push(`/sok-verksamhet/resultat?${searchQuery}`);
+  };
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -73,16 +91,16 @@ export default function SokVerksamhet() {
                   Var söker du verksamheter?
                 </label>
                 <select
-        id="lan"
-        className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
-        value={selectedLan}
-        onChange={(e) => handleLanChange(e.target.value as LanName | '')}
-      >
-        <option value="">Välj län</option>
-        {(Object.keys(typedLanKommuner) as LanName[]).map((lan) => (
-          <option key={lan} value={lan}>{lan}</option>
-        ))}
-      </select>
+                  id="lan"
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-gray-700"
+                  value={selectedLan}
+                  onChange={(e) => handleLanChange(e.target.value as LanName | '')}
+                >
+                  <option value="">Välj län</option>
+                  {(Object.keys(typedLanKommuner) as LanName[]).map((lan) => (
+                    <option key={lan} value={lan}>{lan}</option>
+                  ))}
+                </select>
               </div>
 
               {selectedLan && isValidLan(selectedLan) && (
@@ -204,10 +222,7 @@ export default function SokVerksamhet() {
             className="mt-8 bg-blue-600 text-white px-8 py-3 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out w-full md:w-auto"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              // Implement search functionality here
-              console.log('Search criteria:', { selectedLan, selectedKommun, ageRange, targetGroups, selectedServices, searchTerm });
-            }}
+            onClick={handleSearch}
           >
             Sök verksamheter
           </motion.button>
