@@ -17,46 +17,43 @@ type VerksamhetDetail = {
     services: string[];
     locations: string[];
   };
-  // Add more fields as needed
 };
 
 export default function VerksamhetDetailPage() {
   const { id } = useParams();
   const [verksamhet, setVerksamhet] = useState<VerksamhetDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // In a real application, you would fetch the data from an API
-    // For now, we'll use mock data
-    const mockData: VerksamhetDetail = {
-      id: '1',
-      name: 'Insikten Familjehem AB',
-      description: 'Insiktens verksamhet startade för 25 år sedan. Det har gett oss en gedigen erfarenhet.',
-      logo: '/path/to/insikten-logo.png',
-      contacts: [
-        {
-          name: 'Camilla Ritzman Broo',
-          role: 'Föreståndare',
-          phone: '070-789 98 70',
-          email: 'camilla.ritzman-broo@insikten.info'
-        },
-        // Add more contacts as needed
-      ],
-      address: 'Lantmannagatan 37, 733 40 Sala',
-      criteria: {
-        age: '0-25',
-        targetGroups: ['Kvinnor/flickor', 'Förälder-barn', 'Män/pojkar'],
-        services: ['Konsulentstödd familjehemsvård - SoL 7.1.5', 'LVU'],
-        locations: ['Västmanlands län', 'Uppsala län', 'Värmlands län'],
-      },
+    const fetchVerksamhetDetail = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/companies/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch company details');
+        }
+        const data = await response.json();
+        setVerksamhet(data);
+      } catch (error) {
+        console.error('Error fetching company details:', error);
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    setVerksamhet(mockData);
+    if (id) {
+      fetchVerksamhetDetail();
+    }
   }, [id]);
 
-  if (!verksamhet) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
+  if (!verksamhet) {
+    return <div>Company not found</div>;
+  }
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="container mx-auto px-4">

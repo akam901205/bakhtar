@@ -9,7 +9,26 @@ export async function GET() {
     if (!(session?.user as any)?.isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    const companies = await prisma.company.findMany();
+    const companies = await prisma.company.findMany({
+      include: {
+        contacts: true,
+        locations: {
+          include: {
+            location: true
+          }
+        },
+        services: {
+          include: {
+            service: true
+          }
+        },
+        targetGroups: {
+          include: {
+            targetGroup: true
+          }
+        },
+      },
+    });
     return NextResponse.json(companies);
   } catch (error) {
     console.error('Error in GET /api/admin/companies:', error);
@@ -27,9 +46,28 @@ export async function POST(request: Request) {
     const newCompany = await prisma.company.create({
       data: {
         name: data.name,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
+        description: data.description,
+        ageRangeMin: data.ageRangeMin,
+        ageRangeMax: data.ageRangeMax,
+        logo: data.logo,
+        contacts: {
+          create: data.contacts,
+        },
+        locations: {
+          connect: data.locations.map((id: number) => ({ id })),
+        },
+        services: {
+          connect: data.services.map((id: number) => ({ id })),
+        },
+        targetGroups: {
+          connect: data.targetGroups.map((id: number) => ({ id })),
+        },
+      },
+      include: {
+        contacts: true,
+        locations: true,
+        services: true,
+        targetGroups: true,
       },
     });
     return NextResponse.json(newCompany);
@@ -50,9 +88,29 @@ export async function PUT(request: Request) {
       where: { id: data.id },
       data: {
         name: data.name,
-        email: data.email,
-        phone: data.phone,
-        address: data.address,
+        description: data.description,
+        ageRangeMin: data.ageRangeMin,
+        ageRangeMax: data.ageRangeMax,
+        logo: data.logo,
+        contacts: {
+          deleteMany: {},
+          create: data.contacts,
+        },
+        locations: {
+          set: data.locations.map((id: number) => ({ id })),
+        },
+        services: {
+          set: data.services.map((id: number) => ({ id })),
+        },
+        targetGroups: {
+          set: data.targetGroups.map((id: number) => ({ id })),
+        },
+      },
+      include: {
+        contacts: true,
+        locations: true,
+        services: true,
+        targetGroups: true,
       },
     });
     return NextResponse.json(updatedCompany);

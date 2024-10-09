@@ -22,31 +22,34 @@ type SearchResult = {
 export default function SearchResultsPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [totalResults, setTotalResults] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Here you would normally fetch the results based on searchParams
-    // For now, we'll use mock data
-    const mockResults: SearchResult[] = [
-      {
-        id: '1',
-        name: 'Insikten Familjehem AB',
-        locations: ['flera län'],
-        ageRange: '0-25',
-        targetGroups: ['Kvinnor/flickor', 'Förälder-barn', 'Män/pojkar'],
-        contact: {
-          name: 'Camilla Ritzman Broo',
-          phone: '070-789 98 70',
-          email: 'camilla.ritzman-broo@insikten.info'
-        },
-        logo: '/path/to/insikten-logo.png'
-      },
-      // Add more mock results here
-    ];
+    const fetchResults = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/search-companies?${searchParams.toString()}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch search results');
+        }
+        const data = await response.json();
+        setResults(data.companies);
+        setTotalResults(data.totalCount);
+      } catch (error) {
+        console.error('Error fetching search results:', error);
+        // Handle error (e.g., show error message to user)
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    setResults(mockResults);
-    setTotalResults(mockResults.length);
+    fetchResults();
   }, [searchParams]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen py-12">

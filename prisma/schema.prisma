@@ -100,10 +100,69 @@ model Request {
 }
 
 model Company {
-  id        Int      @id @default(autoincrement())
+  id           Int                    @id @default(autoincrement())
+  name         String
+  description  String?
+  ageRangeMin  Int
+  ageRangeMax  Int
+  logo         String?
+  email        String?
+  contacts     Contact[]
+  locations    CompanyToLocation[]
+  services     CompanyToService[]
+  targetGroups CompanyToTargetGroup[]
+}
+
+model Contact {
+  id        Int     @id @default(autoincrement())
   name      String
-  email     String
   phone     String
-  address   String
-  createdAt DateTime @default(now())
+  email     String
+  companyId Int
+  company   Company @relation(fields: [companyId], references: [id])
+}
+
+model Location {
+  id        Int                  @id @default(autoincrement())
+  name      String
+  companies CompanyToLocation[]
+}
+
+model Service {
+  id        Int                 @id @default(autoincrement())
+  name      String
+  companies CompanyToService[]
+}
+
+model TargetGroup {
+  id        Int                      @id @default(autoincrement())
+  name      String
+  companies CompanyToTargetGroup[]
+}
+
+model CompanyToLocation {
+  company    Company  @relation(fields: [companyId], references: [id])
+  companyId  Int
+  location   Location @relation(fields: [locationId], references: [id])
+  locationId Int
+
+  @@id([companyId, locationId])
+}
+
+model CompanyToService {
+  company   Company @relation(fields: [companyId], references: [id])
+  companyId Int
+  service   Service @relation(fields: [serviceId], references: [id])
+  serviceId Int
+
+  @@id([companyId, serviceId])
+}
+
+model CompanyToTargetGroup {
+  company      Company     @relation(fields: [companyId], references: [id])
+  companyId    Int
+  targetGroup  TargetGroup @relation(fields: [targetGroupId], references: [id])
+  targetGroupId Int
+
+  @@id([companyId, targetGroupId])
 }
