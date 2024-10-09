@@ -32,8 +32,6 @@ export default async function AdminCompaniesPage() {
   let error = null;
 
   try {
-    console.log("Prisma client:", prisma);
-    console.log("Prisma company model:", prisma.company);
     console.log("Attempting to fetch companies...");
     companies = await prisma.company.findMany({
       select: {
@@ -56,9 +54,6 @@ export default async function AdminCompaniesPage() {
       <div className="container mx-auto p-4 text-center">
         <h1 className="text-2xl font-bold text-gray-800 mb-4">Ett fel uppstod</h1>
         <p className="text-gray-600">{error}</p>
-        <pre className="mt-4 p-4 bg-gray-100 rounded-md overflow-auto">
-          {JSON.stringify({ prisma, prismaCompany: prisma.company, error }, null, 2)}
-        </pre>
       </div>
     );
   }

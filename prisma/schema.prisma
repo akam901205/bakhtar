@@ -69,15 +69,6 @@ model Business {
   @@index([adminId], map: "Business_adminId_fkey")
 }
 
-model Company {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  phone     String
-  address   String
-  createdAt DateTime @default(now())
-}
-
 model Request {
   id                  Int       @id @default(autoincrement())
   status              String    @default("PENDING")
@@ -106,4 +97,13 @@ model Request {
 
   @@index([userId], map: "Request_userId_fkey")
   @@index([businessId], map: "Request_businessId_fkey")
+}
+
+model Company {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String
+  phone     String
+  address   String
+  createdAt DateTime @default(now())
 }
