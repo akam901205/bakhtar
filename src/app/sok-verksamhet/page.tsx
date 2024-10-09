@@ -51,7 +51,6 @@ export default function SokVerksamhet() {
   };
 
   const handleSearch = () => {
-    // Construct the search query
     const searchQuery = new URLSearchParams({
       lan: selectedLan,
       kommun: selectedKommun,
@@ -59,10 +58,9 @@ export default function SokVerksamhet() {
       ageMax: ageRange.max.toString(),
       targetGroups: targetGroups.join(','),
       services: selectedServices.join(','),
-      searchTerm: searchTerm
+      searchTerm: searchTerm // Make sure this line is included
     }).toString();
-
-    // Navigate to the search results page
+  
     router.push(`/sok-verksamhet/resultat?${searchQuery}`);
   };
 

@@ -52,7 +52,9 @@ export default function AdminCompaniesClient({ initialCompanies }: { initialComp
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    fetchCompanies();
+    if (companies.length === 0) {
+      fetchCompanies();
+    }
   }, []);
 
   const fetchCompanies = async () => {
@@ -60,12 +62,14 @@ export default function AdminCompaniesClient({ initialCompanies }: { initialComp
     try {
       const response = await fetch('/api/admin/companies', { credentials: 'include' });
       if (!response.ok) {
-        throw new Error(`Misslyckades med att hämta företag: ${response.status} ${response.statusText}`);
+        throw new Error(`Failed to fetch companies: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
+      console.log('Fetched companies:', data);
       setCompanies(data);
     } catch (error) {
-      setError(`Fel vid hämtning av företag: ${error.message}`);
+      console.error('Error fetching companies:', error);
+      setError(`Error fetching companies: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -92,26 +96,23 @@ export default function AdminCompaniesClient({ initialCompanies }: { initialComp
       const response = await fetch(`/api/admin/companies`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ...editingCompany,
-          locations: editingCompany.locations.map(l => ({ name: l.name })),
-          services: editingCompany.services.map(s => ({ name: s.name })),
-          targetGroups: editingCompany.targetGroups.map(tg => ({ name: tg.name })),
-        }),
+        body: JSON.stringify(editingCompany),
         credentials: 'include'
       });
-      const responseData = await response.json();
-      console.log('Response:', responseData);
       if (!response.ok) {
-        throw new Error(responseData.error || 'Failed to update company');
+        throw new Error(`Failed to update company: ${response.status} ${response.statusText}`);
       }
-      setCompanies(companies.map(c => c.id === responseData.id ? responseData : c));
+      const updatedCompany = await response.json();
+      console.log('Received updated company:', updatedCompany);
+      setCompanies(prevCompanies => 
+        prevCompanies.map(c => c.id === updatedCompany.id ? updatedCompany : c)
+      );
       setEditingCompany(null);
-      setSuccessMessage('Företaget har uppdaterats');
+      setSuccessMessage('Company has been updated');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
       console.error('Error updating company:', error);
-      setError(`Fel vid uppdatering av företag: ${error.message}`);
+      setError(`Error updating company: ${error.message}`);
     } finally {
       setIsLoading(false);
     }

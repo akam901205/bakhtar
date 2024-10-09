@@ -6,28 +6,25 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 
 type SearchResult = {
-  id: string;
+  id: number;
   name: string;
-  locations: string[];
+  description: string | null;
   ageRange: string;
-  targetGroups: string[];
-  contact: {
-    name: string;
-    phone: string;
-    email: string;
-  };
   logo: string;
+  email: string | null;
 };
 
 export default function SearchResultsPage() {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [totalResults, setTotalResults] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const fetchResults = async () => {
       setIsLoading(true);
+      setError(null);
       try {
         const response = await fetch(`/api/search-companies?${searchParams.toString()}`);
         if (!response.ok) {
@@ -38,7 +35,7 @@ export default function SearchResultsPage() {
         setTotalResults(data.totalCount);
       } catch (error) {
         console.error('Error fetching search results:', error);
-        // Handle error (e.g., show error message to user)
+        setError('Failed to fetch search results. Please try again.');
       } finally {
         setIsLoading(false);
       }
@@ -51,6 +48,10 @@ export default function SearchResultsPage() {
     return <div>Loading...</div>;
   }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -58,17 +59,12 @@ export default function SearchResultsPage() {
           <h2 className="text-2xl font-semibold mb-6 text-gray-700">
             Verksamheter som matchar din sökning: {totalResults}
           </h2>
-          
+         
           <div className="flex justify-between items-center mb-6">
             <Link href="/sok-verksamhet" className="text-blue-600 hover:underline">
               ← Ändra sökparametrar
             </Link>
-            <select className="p-2 border border-gray-300 rounded-md">
-              <option>Sortera</option>
-              {/* Add sorting options here */}
-            </select>
           </div>
-
           <div className="space-y-6">
             {results.map((result) => (
               <motion.div
@@ -82,27 +78,21 @@ export default function SearchResultsPage() {
                   <img src={result.logo} alt={result.name} className="w-16 h-16 mr-4" />
                   <div className="flex-grow">
                     <h3 className="text-xl font-semibold text-gray-800">{result.name}</h3>
-                    <p className="text-gray-600">Finns i {result.locations.join(', ')}</p>
+                    <p className="text-gray-600">{result.description}</p>
                     <p className="text-gray-600">Ålder: {result.ageRange}</p>
-                    <p className="text-gray-600">Kön: {result.targetGroups.join(', ')}</p>
-                  </div>
-                  <div className="text-right">
-                    <h4 className="font-semibold">Kontakt</h4>
-                    <p>{result.contact.name}</p>
-                    <p>{result.contact.phone}</p>
-                    <p className="text-blue-600">{result.contact.email}</p>
+                    {result.email && <p className="text-gray-600">Email: {result.email}</p>}
                   </div>
                 </div>
                 <div className="mt-4 text-right">
-                <Link href={`/sok-verksamhet/${result.id}`}>
-  <motion.button
-    className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out"
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-  >
-    Läs mer →
-  </motion.button>
-</Link>
+                  <Link href={`/sok-verksamhet/${result.id}`}>
+                    <motion.button
+                      className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300 ease-in-out"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Läs mer →
+                    </motion.button>
+                  </Link>
                 </div>
               </motion.div>
             ))}

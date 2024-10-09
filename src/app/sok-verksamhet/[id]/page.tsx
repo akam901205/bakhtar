@@ -9,14 +9,12 @@ type VerksamhetDetail = {
   name: string;
   description: string;
   logo: string;
-  contacts: Array<{ name: string; role: string; phone: string; email: string }>;
-  address: string;
-  criteria: {
-    age: string;
-    targetGroups: string[];
-    services: string[];
-    locations: string[];
-  };
+  contacts: Array<{ name: string; phone: string; email: string }>;
+  locations: string[];
+  ageRangeMin: number;
+  ageRangeMax: number;
+  targetGroups: string[];
+  services: string[];
 };
 
 export default function VerksamhetDetailPage() {
@@ -36,7 +34,6 @@ export default function VerksamhetDetailPage() {
         setVerksamhet(data);
       } catch (error) {
         console.error('Error fetching company details:', error);
-        // Handle error (e.g., show error message to user)
       } finally {
         setIsLoading(false);
       }
@@ -54,6 +51,7 @@ export default function VerksamhetDetailPage() {
   if (!verksamhet) {
     return <div>Company not found</div>;
   }
+
   return (
     <div className="bg-gray-50 min-h-screen py-12">
       <div className="container mx-auto px-4">
@@ -71,23 +69,19 @@ export default function VerksamhetDetailPage() {
           <h2 className="text-2xl font-semibold mb-4 text-gray-700">Kontakter</h2>
           {verksamhet.contacts.map((contact, index) => (
             <div key={index} className="mb-4">
-              <h3 className="font-semibold">{contact.role}</h3>
               <p>{contact.name}</p>
               <p>{contact.phone}</p>
               <p className="text-blue-600">{contact.email}</p>
             </div>
           ))}
           
-          <h2 className="text-2xl font-semibold mt-6 mb-4 text-gray-700">Adress</h2>
-          <p>{verksamhet.address}</p>
+          <h2 className="text-2xl font-semibold mt-6 mb-4 text-gray-700">Platser</h2>
+          <p>{verksamhet.locations.join(', ')}</p>
           
           <h2 className="text-2xl font-semibold mt-6 mb-4 text-gray-700">Sökkriterier</h2>
-          <p><strong>Ålder:</strong> {verksamhet.criteria.age}</p>
-          <p><strong>Målgrupp:</strong> {verksamhet.criteria.targetGroups.join(', ')}</p>
-          <p><strong>Insats/Lagrum:</strong> {verksamhet.criteria.services.join(', ')}</p>
-          <p><strong>Län:</strong> {verksamhet.criteria.locations.join(', ')}</p>
-          
-          {/* Add more sections as needed */}
+          <p><strong>Ålder:</strong> {verksamhet.ageRangeMin}-{verksamhet.ageRangeMax} år</p>
+          <p><strong>Målgrupp:</strong> {verksamhet.targetGroups.join(', ')}</p>
+          <p><strong>Insats/Lagrum:</strong> {verksamhet.services.join(', ')}</p>
         </div>
       </div>
     </div>
