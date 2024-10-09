@@ -107,10 +107,10 @@ model Company {
   ageRangeMax  Int
   logo         String?
   email        String?
-  contacts     Contact[]
   locations    CompanyToLocation[]
   services     CompanyToService[]
   targetGroups CompanyToTargetGroup[]
+  contacts     Contact[]
 }
 
 model Contact {
@@ -120,49 +120,54 @@ model Contact {
   email     String
   companyId Int
   company   Company @relation(fields: [companyId], references: [id])
+
+  @@index([companyId], map: "Contact_companyId_fkey")
 }
 
 model Location {
-  id        Int                  @id @default(autoincrement())
-  name      String
+  id        Int                 @id @default(autoincrement())
+  name      String              @unique
   companies CompanyToLocation[]
 }
 
 model Service {
-  id        Int                 @id @default(autoincrement())
+  id        Int                @id @default(autoincrement())
   name      String
   companies CompanyToService[]
 }
 
 model TargetGroup {
-  id        Int                      @id @default(autoincrement())
+  id        Int                    @id @default(autoincrement())
   name      String
   companies CompanyToTargetGroup[]
 }
 
 model CompanyToLocation {
-  company    Company  @relation(fields: [companyId], references: [id])
   companyId  Int
-  location   Location @relation(fields: [locationId], references: [id])
   locationId Int
+  company    Company  @relation(fields: [companyId], references: [id])
+  location   Location @relation(fields: [locationId], references: [id])
 
   @@id([companyId, locationId])
+  @@index([locationId], map: "CompanyToLocation_locationId_fkey")
 }
 
 model CompanyToService {
-  company   Company @relation(fields: [companyId], references: [id])
   companyId Int
-  service   Service @relation(fields: [serviceId], references: [id])
   serviceId Int
+  company   Company @relation(fields: [companyId], references: [id])
+  service   Service @relation(fields: [serviceId], references: [id])
 
   @@id([companyId, serviceId])
+  @@index([serviceId], map: "CompanyToService_serviceId_fkey")
 }
 
 model CompanyToTargetGroup {
-  company      Company     @relation(fields: [companyId], references: [id])
-  companyId    Int
-  targetGroup  TargetGroup @relation(fields: [targetGroupId], references: [id])
+  companyId     Int
   targetGroupId Int
+  company       Company     @relation(fields: [companyId], references: [id])
+  targetGroup   TargetGroup @relation(fields: [targetGroupId], references: [id])
 
   @@id([companyId, targetGroupId])
+  @@index([targetGroupId], map: "CompanyToTargetGroup_targetGroupId_fkey")
 }

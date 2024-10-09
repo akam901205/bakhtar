@@ -88,22 +88,30 @@ export default function AdminCompaniesClient({ initialCompanies }: { initialComp
     if (!editingCompany) return;
     setIsLoading(true);
     try {
+      console.log('Sending data:', JSON.stringify(editingCompany, null, 2));
       const response = await fetch(`/api/admin/companies`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingCompany),
+        body: JSON.stringify({
+          ...editingCompany,
+          locations: editingCompany.locations.map(l => ({ name: l.name })),
+          services: editingCompany.services.map(s => ({ name: s.name })),
+          targetGroups: editingCompany.targetGroups.map(tg => ({ name: tg.name })),
+        }),
         credentials: 'include'
       });
+      const responseData = await response.json();
+      console.log('Response:', responseData);
       if (!response.ok) {
-        throw new Error('Misslyckades med att uppdatera företaget');
+        throw new Error(responseData.error || 'Failed to update company');
       }
-      const updatedCompany = await response.json();
-      setCompanies(companies.map(c => c.id === updatedCompany.id ? updatedCompany : c));
+      setCompanies(companies.map(c => c.id === responseData.id ? responseData : c));
       setEditingCompany(null);
       setSuccessMessage('Företaget har uppdaterats');
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (error) {
-      setError('Fel vid uppdatering av företag');
+      console.error('Error updating company:', error);
+      setError(`Fel vid uppdatering av företag: ${error.message}`);
     } finally {
       setIsLoading(false);
     }
@@ -259,52 +267,163 @@ export default function AdminCompaniesClient({ initialCompanies }: { initialComp
         </div>
       )}
 
-      {(editingCompany || isAddingCompany) && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-4 rounded-lg w-96">
-            <h2 className="text-xl font-bold mb-4">{isAddingCompany ? 'Lägg till nytt företag' : 'Redigera företag'}</h2>
-            <Input
-              type="text"
-              value={editingCompany.name}
-              onChange={(e) => setEditingCompany({ ...editingCompany, name: e.target.value })}
-              placeholder="Företagsnamn"
-              className="mb-2"
-            />
-            <Input
-              type="text"
-              value={editingCompany.description}
-              onChange={(e) => setEditingCompany({ ...editingCompany, description: e.target.value })}
-              placeholder="Beskrivning"
-              className="mb-2"
-            />
-            <Input
-              type="number"
-              value={editingCompany.ageRangeMin}
-              onChange={(e) => setEditingCompany({ ...editingCompany, ageRangeMin: parseInt(e.target.value) })}
-              placeholder="Lägsta ålder"
-              className="mb-2"
-            />
-            <Input
-             type="number"
-             value={editingCompany.ageRangeMin}
-             onChange={(e) => setEditingCompany({ ...editingCompany, ageRangeMin: parseInt(e.target.value) })}
-             placeholder="Lägsta ålder"
-             className="mb-2"
-           />
-           <Input
-             type="number"
-             value={editingCompany.ageRangeMax}
-             onChange={(e) => setEditingCompany({ ...editingCompany, ageRangeMax: parseInt(e.target.value) })}
-             placeholder="Högsta ålder"
-             className="mb-2"
-           />
-           {/* Add more fields for locations, services, and target groups if needed */}
-           <div className="flex justify-end">
-             <Button onClick={() => { setEditingCompany(null); setIsAddingCompany(false); }} variant="outline" className="mr-2">
-               Avbryt
-             </Button>
-             <Button onClick={isAddingCompany ? handleCreateCompany : handleSave}>
-               {isAddingCompany ? 'Skapa' : 'Spara'}
+{(editingCompany || isAddingCompany) && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center overflow-y-auto">
+    <div className="bg-white p-6 rounded-lg w-full max-w-2xl m-4">
+      <h2 className="text-2xl font-bold mb-4">{isAddingCompany ? 'Lägg till nytt företag' : 'Redigera företag'}</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Input
+          type="text"
+          value={editingCompany.name}
+          onChange={(e) => setEditingCompany({ ...editingCompany, name: e.target.value })}
+          placeholder="Företagsnamn"
+          className="mb-2"
+        />
+        <Input
+          type="text"
+          value={editingCompany.description}
+          onChange={(e) => setEditingCompany({ ...editingCompany, description: e.target.value })}
+          placeholder="Beskrivning"
+          className="mb-2"
+        />
+        <Input
+          type="number"
+          value={editingCompany.ageRangeMin}
+          onChange={(e) => setEditingCompany({ ...editingCompany, ageRangeMin: parseInt(e.target.value) })}
+          placeholder="Lägsta ålder"
+          className="mb-2"
+        />
+        <Input
+          type="number"
+          value={editingCompany.ageRangeMax}
+          onChange={(e) => setEditingCompany({ ...editingCompany, ageRangeMax: parseInt(e.target.value) })}
+          placeholder="Högsta ålder"
+          className="mb-2"
+        />
+        <div className="col-span-2">
+          <h3 className="font-semibold mb-2">Platser</h3>
+          {editingCompany.locations.map((location, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <Input
+                type="text"
+                value={location.name}
+                onChange={(e) => {
+                  const newLocations = [...editingCompany.locations];
+                  newLocations[index] = { ...newLocations[index], name: e.target.value };
+                  setEditingCompany({ ...editingCompany, locations: newLocations });
+                }}
+                placeholder="Platsnamn"
+                className="flex-grow mr-2"
+              />
+              <Button 
+                onClick={() => {
+                  const newLocations = editingCompany.locations.filter((_, i) => i !== index);
+                  setEditingCompany({ ...editingCompany, locations: newLocations });
+                }}
+                variant="destructive"
+                size="sm"
+              >
+                Ta bort
+              </Button>
+            </div>
+          ))}
+          <Button 
+            onClick={() => setEditingCompany({ 
+              ...editingCompany, 
+              locations: [...editingCompany.locations, { id: 0, name: '' }] 
+            })}
+            variant="outline"
+            size="sm"
+            className="mt-2"
+          >
+            Lägg till plats
+          </Button>
+        </div>
+        <div className="col-span-2">
+          <h3 className="font-semibold mb-2">Tjänster</h3>
+          {editingCompany.services.map((service, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <Input
+                type="text"
+                value={service.name}
+                onChange={(e) => {
+                  const newServices = [...editingCompany.services];
+                  newServices[index] = { ...newServices[index], name: e.target.value };
+                  setEditingCompany({ ...editingCompany, services: newServices });
+                }}
+                placeholder="Tjänstnamn"
+                className="flex-grow mr-2"
+              />
+              <Button 
+                onClick={() => {
+                  const newServices = editingCompany.services.filter((_, i) => i !== index);
+                  setEditingCompany({ ...editingCompany, services: newServices });
+                }}
+                variant="destructive"
+                size="sm"
+              >
+                Ta bort
+              </Button>
+            </div>
+          ))}
+          <Button 
+            onClick={() => setEditingCompany({ 
+              ...editingCompany, 
+              services: [...editingCompany.services, { id: 0, name: '' }] 
+            })}
+            variant="outline"
+            size="sm"
+            className="mt-2"
+          >
+            Lägg till tjänst
+          </Button>
+        </div>
+        <div className="col-span-2">
+          <h3 className="font-semibold mb-2">Målgrupper</h3>
+          {editingCompany.targetGroups.map((targetGroup, index) => (
+            <div key={index} className="flex items-center mb-2">
+              <Input
+                type="text"
+                value={targetGroup.name}
+                onChange={(e) => {
+                  const newTargetGroups = [...editingCompany.targetGroups];
+                  newTargetGroups[index] = { ...newTargetGroups[index], name: e.target.value };
+                  setEditingCompany({ ...editingCompany, targetGroups: newTargetGroups });
+                }}
+                placeholder="Målgruppsnamn"
+                className="flex-grow mr-2"
+              />
+              <Button 
+                onClick={() => {
+                  const newTargetGroups = editingCompany.targetGroups.filter((_, i) => i !== index);
+                  setEditingCompany({ ...editingCompany, targetGroups: newTargetGroups });
+                }}
+                variant="destructive"
+                size="sm"
+              >
+                Ta bort
+              </Button>
+            </div>
+          ))}
+          <Button 
+            onClick={() => setEditingCompany({ 
+              ...editingCompany, 
+              targetGroups: [...editingCompany.targetGroups, { id: 0, name: '' }] 
+            })}
+            variant="outline"
+            size="sm"
+            className="mt-2"
+          >
+            Lägg till målgrupp
+          </Button>
+        </div>
+      </div>
+      <div className="flex justify-end mt-6">
+        <Button onClick={() => { setEditingCompany(null); setIsAddingCompany(false); }} variant="outline" className="mr-2">
+          Avbryt
+        </Button>
+        <Button onClick={isAddingCompany ? handleCreateCompany : handleSave}>
+          {isAddingCompany ? 'Skapa' : 'Spara'}
              </Button>
            </div>
          </div>

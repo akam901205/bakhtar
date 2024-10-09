@@ -54,20 +54,53 @@ export async function POST(request: Request) {
           create: data.contacts,
         },
         locations: {
-          connect: data.locations.map((id: number) => ({ id })),
+          create: data.locations.map((location: any) => ({
+            location: {
+              connectOrCreate: {
+                where: { name: location.name },
+                create: { name: location.name },
+              }
+            }
+          })),
         },
         services: {
-          connect: data.services.map((id: number) => ({ id })),
+          create: data.services.map((service: any) => ({
+            service: {
+              connectOrCreate: {
+                where: { name: service.name },
+                create: { name: service.name },
+              }
+            }
+          })),
         },
         targetGroups: {
-          connect: data.targetGroups.map((id: number) => ({ id })),
+          create: data.targetGroups.map((targetGroup: any) => ({
+            targetGroup: {
+              connectOrCreate: {
+                where: { name: targetGroup.name },
+                create: { name: targetGroup.name },
+              }
+            }
+          })),
         },
       },
       include: {
         contacts: true,
-        locations: true,
-        services: true,
-        targetGroups: true,
+        locations: {
+          include: {
+            location: true
+          }
+        },
+        services: {
+          include: {
+            service: true
+          }
+        },
+        targetGroups: {
+          include: {
+            targetGroup: true
+          }
+        },
       },
     });
     return NextResponse.json(newCompany);
@@ -84,6 +117,9 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     const data = await request.json();
+    console.log('Received data:', JSON.stringify(data, null, 2));
+
+    // Update the company's basic information
     const updatedCompany = await prisma.company.update({
       where: { id: data.id },
       data: {
@@ -92,31 +128,114 @@ export async function PUT(request: Request) {
         ageRangeMin: data.ageRangeMin,
         ageRangeMax: data.ageRangeMax,
         logo: data.logo,
-        contacts: {
-          deleteMany: {},
-          create: data.contacts,
-        },
-        locations: {
-          set: data.locations.map((id: number) => ({ id })),
-        },
-        services: {
-          set: data.services.map((id: number) => ({ id })),
-        },
-        targetGroups: {
-          set: data.targetGroups.map((id: number) => ({ id })),
-        },
-      },
-      include: {
-        contacts: true,
-        locations: true,
-        services: true,
-        targetGroups: true,
+        email: data.email,
       },
     });
-    return NextResponse.json(updatedCompany);
+
+    // Handle contacts
+    if (Array.isArray(data.contacts)) {
+      await prisma.contact.deleteMany({ where: { companyId: data.id } });
+      if (data.contacts.length > 0) {
+        await prisma.contact.createMany({
+          data: data.contacts.map((contact: any) => ({
+            ...contact,
+            companyId: data.id,
+          })),
+        });
+      }
+    }
+
+    // Handle locations
+    if (Array.isArray(data.locations)) {
+      await prisma.companyToLocation.deleteMany({ where: { companyId: data.id } });
+      for (const location of data.locations) {
+        if (location.name) {
+          const locationRecord = await prisma.location.upsert({
+            where: { name: location.name },
+            create: { name: location.name },
+            update: {},
+          });
+          await prisma.companyToLocation.create({
+            data: {
+              companyId: data.id,
+              locationId: locationRecord.id,
+            },
+          });
+        }
+      }
+    }
+
+    // Handle services (similar to locations)
+    if (Array.isArray(data.services)) {
+      await prisma.companyToService.deleteMany({ where: { companyId: data.id } });
+      for (const service of data.services) {
+        if (service.name) {
+          const serviceRecord = await prisma.service.upsert({
+            where: { name: service.name },
+            create: { name: service.name },
+            update: {},
+          });
+          await prisma.companyToService.create({
+            data: {
+              companyId: data.id,
+              serviceId: serviceRecord.id,
+            },
+          });
+        }
+      }
+    }
+
+    // Handle target groups (similar to locations)
+    if (Array.isArray(data.targetGroups)) {
+      await prisma.companyToTargetGroup.deleteMany({ where: { companyId: data.id } });
+      for (const targetGroup of data.targetGroups) {
+        if (targetGroup.name) {
+          const targetGroupRecord = await prisma.targetGroup.upsert({
+            where: { name: targetGroup.name },
+            create: { name: targetGroup.name },
+            update: {},
+          });
+          await prisma.companyToTargetGroup.create({
+            data: {
+              companyId: data.id,
+              targetGroupId: targetGroupRecord.id,
+            },
+          });
+        }
+      }
+    }
+
+    // Fetch the updated company with all its relations
+    const finalUpdatedCompany = await prisma.company.findUnique({
+      where: { id: data.id },
+      include: {
+        contacts: true,
+        locations: {
+          include: {
+            location: true
+          }
+        },
+        services: {
+          include: {
+            service: true
+          }
+        },
+        targetGroups: {
+          include: {
+            targetGroup: true
+          }
+        },
+      },
+    });
+
+    return NextResponse.json(finalUpdatedCompany);
   } catch (error) {
-    console.error('Error in PUT /api/admin/companies:', error);
-    return NextResponse.json({ error: 'Internal Server Error', details: error.message }, { status: 500 });
+    console.error('Detailed error in PUT /api/admin/companies:', error);
+    return NextResponse.json({ 
+      error: 'Internal Server Error', 
+      details: error.message,
+      stack: error.stack
+    }, { status: 500 });
   }
 }
 
